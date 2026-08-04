@@ -2,6 +2,11 @@
 *.tsx linguist-language=TypeScript
 *.ts linguist-language=TypeScript
 
-# index.html'i dil istatistiğinden çıkar
+# HTML dosyalarını dil istatistiğinden çıkar
 index.html linguist-detectable=false
 public/* linguist-detectable=false
+
+# Test raporlarını "oluşturulmuş" olarak işaretle → Linguist saymasın
+playwright-report/* linguist-generated=true
+test-results/* linguist-generated=true
+e2e/* linguist-detectable=false
