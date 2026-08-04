@@ -26,13 +26,13 @@ export const ORGANIZATIONS: Organization[] = [
 ];
 
 export const USERS: User[] = [
-  { id: DEMO_IDS.user_owner, email: 'admin@northstar.test', fullName: 'Jane Doe', role: 'customer_owner', organizationId: DEMO_IDS.org_main },
-  { id: DEMO_IDS.user_member, email: 'dev@northstar.test', fullName: 'John Smith', role: 'customer_member', organizationId: DEMO_IDS.org_main },
-  { id: 'usr_acme_owner', email: 'owner@acme.test', fullName: 'Alice Acme', role: 'customer_owner', organizationId: DEMO_IDS.org_2 },
-  { id: 'usr_acme_member', email: 'dev@acme.test', fullName: 'Bob Acme', role: 'customer_member', organizationId: DEMO_IDS.org_2 },
-  { id: 'usr_globex_owner', email: 'owner@globex.test', fullName: 'Charlie Globex', role: 'customer_owner', organizationId: DEMO_IDS.org_3 },
-  { id: DEMO_IDS.support_agent, email: 'agent@resolveops.test', fullName: 'Alice Agent', role: 'support_agent' },
-  { id: DEMO_IDS.support_lead, email: 'lead@resolveops.test', fullName: 'Bob Lead', role: 'support_lead' },
+  { id: DEMO_IDS.user_owner, email: 'owner@northstar.demo', fullName: 'Jane Doe', role: 'customer_owner', organizationId: DEMO_IDS.org_main },
+  { id: DEMO_IDS.user_member, email: 'member@northstar.demo', fullName: 'John Smith', role: 'customer_member', organizationId: DEMO_IDS.org_main },
+  { id: 'usr_acme_owner', email: 'owner@acme.demo', fullName: 'Alice Acme', role: 'customer_owner', organizationId: DEMO_IDS.org_2 },
+  { id: 'usr_acme_member', email: 'member@acme.demo', fullName: 'Bob Acme', role: 'customer_member', organizationId: DEMO_IDS.org_2 },
+  { id: 'usr_globex_owner', email: 'owner@globex.demo', fullName: 'Charlie Globex', role: 'customer_owner', organizationId: DEMO_IDS.org_3 },
+  { id: DEMO_IDS.support_agent, email: 'maya@resolveops.demo', fullName: 'Maya Agent', role: 'support_agent' },
+  { id: DEMO_IDS.support_lead, email: 'lead@resolveops.demo', fullName: 'Bob Lead', role: 'support_lead' },
 ];
 
 // Generate members mapping strictly to USERS
@@ -50,7 +50,7 @@ export const API_KEYS: ApiKey[] = Array.from({length: 8}).map((_, i) => ({
   id: `key_${i}`,
   organizationId: ORGANIZATIONS[i % 3].id,
   name: `Production Key ${i}`,
-  prefix: 'sk_live_',
+  prefix: 'rop_demo_',
   lastFour: `${1000 + i}`,
   createdAt: '2025-01-01T00:00:00Z',
   createdBy: DEMO_IDS.user_owner,
@@ -113,7 +113,7 @@ export const TICKETS: SupportTicket[] = Array.from({length: 24}).map((_, i) => {
   const creator = USERS.find(u => u.organizationId === org)?.id || DEMO_IDS.user_owner;
   
   return {
-    id: isMain ? DEMO_IDS.ticket_main : `SUP-200${i}`,
+    id: isMain ? DEMO_IDS.ticket_main : `SUP-${2000 + i}`,
     organizationId: org,
     subject: isMain ? 'Webhook delivery failing for production events' : TICKET_SUBJECTS[i % TICKET_SUBJECTS.length],
     description: isMain ? 'We are seeing 401s on all our webhooks.' : 'Please help, it is impacting our production.',

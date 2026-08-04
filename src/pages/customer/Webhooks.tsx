@@ -1,9 +1,13 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { webhookService } from '../../services/mock/webhookService';
 import { useAuth } from '../../store/authStore';
-import { LoadingState, StatusBadge } from '../../components/shared';
+import { LoadingState } from '../../components/shared';
+import { PageHeader } from '../../components/domain/PageHeader';
+import { StatusBadge } from '../../components/domain/StatusBadge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Plus, MoreHorizontal } from 'lucide-react';
 
 export function Webhooks() {
   const { user } = useAuth();
@@ -20,80 +24,100 @@ export function Webhooks() {
   if (loading) return <LoadingState />;
 
   return (
-    <div className="p-6 flex flex-col gap-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Webhooks</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage webhook endpoints and monitor delivery logs.</p>
-          </div>
-          <button className="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">Add Endpoint</button>
+    <div className="p-8 max-w-[1400px] mx-auto space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <PageHeader 
+            title="Webhooks" 
+            description="Manage webhook endpoints and monitor delivery logs."
+          />
+          <Button className="flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Endpoint
+          </Button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-800">Configured Endpoints</h3>
-        </div>
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">URL</th>
-                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Events</th>
-                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-              </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-              <tr className="hover:bg-slate-50">
-                  <td className="p-4 font-mono text-sm text-slate-700">https://api.northstar.test/webhooks/resolveops</td>
-                  <td className="p-4"><StatusBadge status="active" /></td>
-                  <td className="p-4 text-sm text-slate-600"><span className="bg-slate-100 px-2 py-1 rounded text-xs border border-slate-200">* (All Events)</span></td>
-                  <td className="p-4 text-right"><button className="text-slate-400 hover:text-slate-600">...</button></td>
-              </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-            <h3 className="font-semibold text-slate-800">Recent Deliveries</h3>
-            <div className="flex gap-2">
-                <select className="text-sm border-slate-200 rounded-md py-1 px-2"><option>All Results</option><option>Failed</option></select>
-            </div>
-        </div>
+      <Card>
+        <CardHeader className="border-b border-border bg-muted/30 pb-4">
+            <CardTitle className="text-base">Configured Endpoints</CardTitle>
+        </CardHeader>
         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-muted/30 border-b border-border">
                 <tr>
-                    <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
-                    <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Timestamp</th>
-                    <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Event</th>
-                    <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Attempt</th>
-                    <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Result</th>
+                  <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">URL</th>
+                  <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Events</th>
+                  <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
+                <tr className="hover:bg-muted/30 transition-colors">
+                    <td className="p-4 font-mono text-sm text-foreground font-medium">https://api.northstar.test/webhooks/resolveops</td>
+                    <td className="p-4"><StatusBadge status="active" /></td>
+                    <td className="p-4 text-sm text-muted-foreground">
+                      <span className="bg-muted border border-border px-2 py-1 rounded-md text-xs font-medium text-foreground">* (All Events)</span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                        <MoreHorizontal className="w-5 h-5" />
+                      </Button>
+                    </td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 pb-4">
+            <CardTitle className="text-base">Recent Deliveries</CardTitle>
+            <div className="flex gap-2">
+                <select className="bg-background border border-border text-sm font-medium text-foreground rounded-md py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-ring transition-all">
+                  <option>All Results</option>
+                  <option>Failed</option>
+                </select>
+            </div>
+        </CardHeader>
+        <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+            <thead className="bg-muted/30 border-b border-border">
+                <tr>
+                    <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">ID</th>
+                    <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                    <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Event</th>
+                    <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attempt</th>
+                    <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Result</th>
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
                 {deliveries.map(d => (
-                <tr key={d.id} className="hover:bg-slate-50 cursor-pointer transition-colors">
-                    <td className="p-4"><Link to={`/app/webhooks/${d.id}`} className="text-blue-600 hover:underline font-mono text-sm font-medium px-2 py-1 bg-blue-50 rounded">{d.id}</Link></td>
-                    <td className="p-4 text-sm text-slate-500">{new Date(d.createdAt).toLocaleString()}</td>
-                    <td className="p-4 text-sm text-slate-700 font-medium">{d.event}</td>
-                    <td className="p-4 text-sm text-slate-500">{d.attempt}</td>
+                <tr key={d.id} className="hover:bg-muted/30 cursor-pointer transition-colors">
+                    <td className="p-4">
+                      <Link to={`/app/webhooks/${d.id}`} className="text-primary hover:underline font-mono text-sm font-medium">
+                        {d.id}
+                      </Link>
+                    </td>
+                    <td className="p-4 text-sm text-muted-foreground">{new Date(d.createdAt).toLocaleString()}</td>
+                    <td className="p-4 text-sm text-foreground font-medium">{d.event}</td>
+                    <td className="p-4 text-sm text-muted-foreground font-mono">{d.attempt}</td>
                     <td className="p-4">
                         <div className="flex items-center gap-2">
                             <StatusBadge status={d.result} />
-                            <span className="text-xs text-slate-400 font-mono">HTTP {d.statusCode}</span>
+                            <span className="text-xs text-muted-foreground font-mono">HTTP {d.statusCode}</span>
                         </div>
                     </td>
                 </tr>
                 ))}
                 {deliveries.length === 0 && (
-                    <tr><td colSpan={5} className="p-8 text-center text-slate-500">No recent webhook deliveries.</td></tr>
+                    <tr>
+                      <td colSpan={5} className="p-12 text-center text-sm text-muted-foreground">
+                        No recent webhook deliveries.
+                      </td>
+                    </tr>
                 )}
             </tbody>
             </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
-

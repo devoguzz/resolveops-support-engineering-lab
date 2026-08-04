@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ticketService } from '../../services/mock/ticketService';
 import { useAuth } from '../../store/authStore';
+import { Card, CardContent } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { PageHeader } from '../../components/domain/PageHeader';
 
 export function NewSupportRequest() {
   const { user } = useAuth();
@@ -42,34 +45,66 @@ export function NewSupportRequest() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create New Support Request</h1>
-      <div className="card p-6">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {error && <div className="p-3 bg-red-50 text-red-600 rounded text-sm border border-red-200">{error}</div>}
-          
-          <div className="form-group">
-            <label className="form-label">Subject</label>
-            <input required type="text" className="form-input" placeholder="Brief summary of the issue" value={subject} onChange={e => setSubject(e.target.value)} />
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Description</label>
-            <textarea required rows={5} className="form-input" placeholder="Provide as much detail as possible..." value={description} onChange={e => setDescription(e.target.value)}></textarea>
-          </div>
-          
-          <div className="form-group">
-            <label className="form-label">Request ID (Optional)</label>
-            <input type="text" className="form-input bg-slate-50" value={initialRequestId} readOnly disabled />
-            <p className="text-xs text-muted mt-1">If this request is related to a specific API or Webhook request, its ID will appear here.</p>
-          </div>
-          
-          <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
-            <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">Cancel</button>
-            <button type="submit" disabled={submitting} className="btn btn-primary">{submitting ? 'Submitting...' : 'Submit Request'}</button>
-          </div>
-        </form>
-      </div>
+    <div className="p-8 max-w-3xl mx-auto space-y-6">
+      <PageHeader 
+        title="Create Support Request" 
+        description="Submit a new technical support request to our engineering team."
+      />
+      
+      <Card>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            {error && (
+              <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm border border-destructive/20 font-medium">
+                {error}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Subject</label>
+              <input 
+                required 
+                type="text" 
+                className="w-full bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+                placeholder="Brief summary of the issue" 
+                value={subject} 
+                onChange={e => setSubject(e.target.value)} 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Description</label>
+              <textarea 
+                required 
+                rows={5} 
+                className="w-full bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+                placeholder="Provide as much detail as possible..." 
+                value={description} 
+                onChange={e => setDescription(e.target.value)}
+              ></textarea>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Request ID (Optional)</label>
+              <input 
+                type="text" 
+                className="w-full bg-muted border border-border text-muted-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+                value={initialRequestId} 
+                readOnly 
+                disabled 
+              />
+              <p className="text-xs text-muted-foreground font-medium">If this request is related to a specific API or Webhook request, its ID will appear here.</p>
+            </div>
+            
+            <div className="pt-4 border-t border-border flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

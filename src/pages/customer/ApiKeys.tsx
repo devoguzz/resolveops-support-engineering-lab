@@ -3,6 +3,10 @@ import { apiKeyService } from '../../services/mock/apiKeyService'
 import { ApiKey } from '../../domain/models'
 import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
+import { PageHeader } from '../../components/domain/PageHeader'
+import { Card, CardContent } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
+import { X, Copy } from 'lucide-react'
 
 export function ApiKeys() {
   const { user } = useAuth()
@@ -46,89 +50,115 @@ export function ApiKeys() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">API Keys</h1>
-          <p className="text-slate-500 mt-1">Manage API keys for accessing the ResolveOps API.</p>
-        </div>
-      </div>
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6">
+      <PageHeader 
+        title="API Keys" 
+        description="Manage API keys for accessing the ResolveOps API."
+      />
       
       {newKeyData && (
-        <div className="bg-green-50 border border-green-200 p-6 rounded-xl relative">
-          <button onClick={() => setNewKeyData(null)} className="absolute top-4 right-4 text-green-700 hover:text-green-900">&times;</button>
-          <h3 className="text-green-900 font-semibold mb-2">New API Key Created: {newKeyData.name}</h3>
-          <p className="text-green-800 text-sm mb-4">Please copy this secret key now. You will not be able to see it again.</p>
-          <div className="flex gap-2">
-            <code className="flex-1 bg-white p-3 rounded border border-green-200 font-mono text-green-900 select-all">{newKeyData.secret}</code>
-            <button className="btn btn-secondary bg-white text-green-800 border-green-200 hover:bg-green-100" onClick={() => navigator.clipboard.writeText(newKeyData.secret)}>Copy</button>
-          </div>
-        </div>
+        <Card className="bg-success/10 border-success/20 relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setNewKeyData(null)} 
+            className="absolute top-4 right-4 text-success hover:text-success hover:bg-success/20"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+          <CardContent className="pt-6">
+            <h3 className="text-success font-semibold mb-2">New API Key Created: {newKeyData.name}</h3>
+            <p className="text-success/80 text-sm mb-4 font-medium">Please copy this secret key now. You will not be able to see it again.</p>
+            <div className="flex gap-2 items-stretch">
+              <code className="flex-1 bg-background/50 p-3 rounded-md border border-success/20 font-mono text-success select-all">{newKeyData.secret}</code>
+              <Button 
+                variant="outline"
+                className="bg-background/50 border-success/20 text-success hover:bg-success/20 hover:text-success flex items-center gap-2" 
+                onClick={() => navigator.clipboard.writeText(newKeyData.secret)}
+              >
+                <Copy className="w-4 h-4" /> Copy
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row gap-8 p-6">
-        <div className="md:w-1/3">
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Create New Key</h2>
-          <p className="text-sm text-slate-500 mb-4">Generate a new API key for a script or application.</p>
-          <form onSubmit={handleCreate} className="flex flex-col gap-3">
-            <input 
-              type="text" 
-              placeholder="Key Name (e.g., Production Backend)" 
-              value={newKeyName}
-              onChange={e => setNewKeyName(e.target.value)}
-              className="form-input w-full"
-              required
-              disabled={isCreating || user?.role !== 'customer_owner'}
-            />
-            <button type="submit" disabled={isCreating || !newKeyName || user?.role !== 'customer_owner'} className="btn btn-primary bg-slate-900 hover:bg-slate-800 text-white w-full py-2">
-              {isCreating ? 'Creating...' : 'Generate Key'}
-            </button>
-            {user?.role !== 'customer_owner' && (
-              <p className="text-xs text-slate-400 mt-1">Only Organization Owners can generate API keys.</p>
-            )}
-          </form>
-        </div>
-        
-        <div className="md:w-2/3">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Active Keys</h2>
-          {loading ? (
-            <div className="text-center text-slate-500 p-4">Loading keys...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="text-slate-500 border-b border-slate-200">
-                  <tr>
-                    <th className="pb-3 font-medium">Name</th>
-                    <th className="pb-3 font-medium">Key Prefix</th>
-                    <th className="pb-3 font-medium">Created</th>
-                    <th className="pb-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {keys.filter(k => k.status === 'active').length === 0 ? (
-                    <tr><td colSpan={4} className="py-4 text-center text-slate-500">No active keys.</td></tr>
-                  ) : keys.filter(k => k.status === 'active').map(k => (
-                    <tr key={k.id} className="hover:bg-slate-50">
-                      <td className="py-3 font-medium text-slate-900">{k.name}</td>
-                      <td className="py-3 font-mono text-slate-500">{k.prefix}</td>
-                      <td className="py-3 text-slate-500">{formatDate(k.createdAt)}</td>
-                      <td className="py-3 text-right">
-                        <button 
-                          onClick={() => handleRevoke(k.id)}
-                          disabled={user?.role !== 'customer_owner'}
-                          className="text-red-600 hover:underline disabled:opacity-50 disabled:no-underline font-medium"
-                        >
-                          Revoke
-                        </button>
-                      </td>
+      <Card>
+        <CardContent className="p-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
+          <div className="md:w-1/3 p-6 bg-muted/10">
+            <h2 className="text-lg font-semibold text-foreground mb-2">Create New Key</h2>
+            <p className="text-sm text-muted-foreground mb-6">Generate a new API key for a script or application.</p>
+            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+              <input 
+                type="text" 
+                placeholder="Key Name (e.g., Production Backend)" 
+                value={newKeyName}
+                onChange={e => setNewKeyName(e.target.value)}
+                className="w-full bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                required
+                disabled={isCreating || user?.role !== 'customer_owner'}
+              />
+              <Button 
+                type="submit" 
+                disabled={isCreating || !newKeyName || user?.role !== 'customer_owner'} 
+                className="w-full"
+              >
+                {isCreating ? 'Creating...' : 'Generate Key'}
+              </Button>
+              {user?.role !== 'customer_owner' && (
+                <p className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 p-2 rounded border border-border text-center">
+                  Only Organization Owners can generate API keys.
+                </p>
+              )}
+            </form>
+          </div>
+          
+          <div className="md:w-2/3 p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-6">Active Keys</h2>
+            {loading ? (
+              <div className="text-center text-sm text-muted-foreground py-12">Loading keys...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead className="text-muted-foreground border-b border-border">
+                    <tr>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider">Name</th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider">Key Prefix</th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider">Created</th>
+                      <th className="pb-3 text-xs font-semibold uppercase tracking-wider text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {keys.filter(k => k.status === 'active').length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
+                          No active keys.
+                        </td>
+                      </tr>
+                    ) : keys.filter(k => k.status === 'active').map(k => (
+                      <tr key={k.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 font-medium text-foreground">{k.name}</td>
+                        <td className="py-4 font-mono text-muted-foreground">{k.prefix}</td>
+                        <td className="py-4 text-muted-foreground">{formatDate(k.createdAt)}</td>
+                        <td className="py-4 text-right">
+                          <Button 
+                            variant="ghost"
+                            onClick={() => handleRevoke(k.id)}
+                            disabled={user?.role !== 'customer_owner'}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-3"
+                          >
+                            Revoke
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

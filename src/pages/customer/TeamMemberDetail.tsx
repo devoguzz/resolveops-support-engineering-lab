@@ -3,7 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import { teamService } from '../../services/mock/teamService';
 import { activityService } from '../../services/mock/activityService';
 import { useAuth } from '../../store/authStore';
-import { LoadingState, StatusBadge, Toast } from '../../components/shared';
+import { LoadingState, Toast } from '../../components/shared';
+import { StatusBadge } from '../../components/domain/StatusBadge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 
 export function TeamMemberDetail() {
   const { memberId } = useParams();
@@ -62,10 +66,10 @@ export function TeamMemberDetail() {
   };
 
   if (loading) return <LoadingState />;
-  if (!member) return <div className="p-8 text-center text-slate-500">Member not found or access denied</div>;
+  if (!member) return <div className="p-12 text-center text-sm text-muted-foreground">Member not found or access denied</div>;
 
   return (
-    <div className="p-6 flex flex-col gap-6 max-w-4xl mx-auto relative">
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6 relative">
       {toast.show && (
         <div className="fixed top-4 right-4 z-50">
           <Toast message={toast.message} type={toast.type}  />
@@ -73,11 +77,13 @@ export function TeamMemberDetail() {
       )}
 
       <div>
-        <Link to="/app/team" className="text-sm text-blue-600 hover:underline mb-4 inline-block">&larr; Back to Team</Link>
-        <div className="flex justify-between items-start">
+        <Link to="/app/team" className="inline-flex items-center text-sm font-medium text-primary hover:underline gap-1 mb-4">
+          <ArrowLeft className="w-4 h-4" /> Back to Team
+        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">{member.user?.fullName || member.userId}</h1>
-            <p className="text-slate-500 mt-1">{member.user?.email || 'No email available'}</p>
+            <h1 className="text-3xl font-bold text-foreground">{member.user?.fullName || member.userId}</h1>
+            <p className="text-muted-foreground mt-2 font-medium">{member.user?.email || 'No email available'}</p>
           </div>
           <div className="flex items-center gap-3">
              <StatusBadge status={member.status} />
@@ -87,73 +93,84 @@ export function TeamMemberDetail() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 flex flex-col gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-              <h3 className="font-semibold text-slate-800">Recent Activity</h3>
-            </div>
-            <div className="divide-y divide-slate-100">
+          <Card>
+            <CardHeader className="border-b border-border bg-muted/30 pb-4">
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+            </CardHeader>
+            <div className="divide-y divide-border">
                {activities.length > 0 ? activities.map(act => (
-                 <div key={act.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50">
+                 <div key={act.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
                      <div>
-                         <p className="text-sm font-medium text-slate-900">{act.description}</p>
-                         <p className="text-xs text-slate-500 mt-1 capitalize">Resource: {act.resource} • Result: {act.result}</p>
+                         <p className="text-sm font-semibold text-foreground">{act.description}</p>
+                         <p className="text-xs text-muted-foreground mt-1.5 font-medium capitalize flex flex-wrap gap-2">
+                           <span className="bg-muted px-2 py-0.5 rounded-sm">Resource: {act.resource}</span> 
+                           <span className="bg-muted px-2 py-0.5 rounded-sm">Result: {act.result}</span>
+                         </p>
                      </div>
-                     <span className="text-xs text-slate-400">{new Date(act.timestamp).toLocaleString()}</span>
+                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{new Date(act.timestamp).toLocaleString()}</span>
                  </div>
                )) : (
-                 <div className="p-6 text-center text-slate-500">No recent activity</div>
+                 <div className="p-12 text-center text-sm text-muted-foreground">No recent activity</div>
                )}
             </div>
-          </div>
+          </Card>
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Profile Details</h3>
-            <div className="flex flex-col gap-4">
-              <div>
-                <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Role</span>
-                {isOwner && member.userId !== user?.id ? (
-                  <select 
-                    className="form-input w-full px-3 py-2 border rounded-md text-sm"
-                    value={member.role}
-                    onChange={(e) => handleRoleChange(e.target.value)}
-                  >
-                    <option value="customer_owner">Owner</option>
-                    <option value="customer_member">Member</option>
-                  </select>
-                ) : (
-                  <span className="font-medium text-slate-700 capitalize">{member.role.replace('customer_', '')}</span>
-                )}
+          <Card>
+            <CardHeader className="border-b border-border bg-muted/30 pb-4">
+              <CardTitle className="text-base">Profile Details</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-col gap-6">
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Role</span>
+                  {isOwner && member.userId !== user?.id ? (
+                    <select 
+                      className="w-full bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                      value={member.role}
+                      onChange={(e) => handleRoleChange(e.target.value)}
+                    >
+                      <option value="customer_owner">Owner</option>
+                      <option value="customer_member">Member</option>
+                    </select>
+                  ) : (
+                    <span className="font-semibold text-foreground capitalize block bg-muted/50 border border-border px-3 py-2 rounded-md">{member.role.replace('customer_', '')}</span>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Joined</span>
+                  <span className="font-medium text-foreground">{new Date(member.joinedAt).toLocaleDateString()}</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Last Active</span>
+                  <span className="font-medium text-foreground">{new Date(member.lastActiveAt).toLocaleString()}</span>
+                </div>
               </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Joined</span>
-                <span className="font-medium text-slate-700">{new Date(member.joinedAt).toLocaleDateString()}</span>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase tracking-wider block mb-1">Last Active</span>
-                <span className="font-medium text-slate-700">{new Date(member.lastActiveAt).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {isOwner && (
-            <div className="bg-red-50 rounded-xl border border-red-200 shadow-sm p-6">
-              <h3 className="font-semibold text-red-800 mb-2">Danger Zone</h3>
-              <p className="text-sm text-red-700 mb-4">Revoking access will immediately disconnect this user's active sessions.</p>
-              <button 
-                onClick={handleStatusToggle}
-                disabled={member.userId === user?.id}
-                className="btn btn-secondary w-full text-red-700 border-red-200 hover:bg-red-100 disabled:opacity-50"
-              >
-                {member.status === 'active' ? 'Deactivate Member' : 'Activate Member'}
-              </button>
-            </div>
+            <Card className="border-destructive/30 bg-destructive/5">
+              <CardHeader className="border-b border-destructive/20 pb-4 flex flex-row items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+                <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <p className="text-sm text-destructive font-medium leading-relaxed">Revoking access will immediately disconnect this user's active sessions.</p>
+                <Button 
+                  variant="outline"
+                  onClick={handleStatusToggle}
+                  disabled={member.userId === user?.id}
+                  className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  {member.status === 'active' ? 'Deactivate Member' : 'Activate Member'}
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
     </div>
   );
 }
-
-

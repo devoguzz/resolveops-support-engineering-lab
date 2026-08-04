@@ -25,8 +25,8 @@ export class ApiKeyService {
     }
     
     const randomHex = Math.random().toString(16).substring(2, 10)
-    const secret = `sk_live_${randomHex}89ab`
-    const prefix = `sk_live_...${randomHex.substring(4)}`
+    const secret = `rop_demo_${randomHex}89ab`
+    const prefix = `rop_demo_...${randomHex.substring(4)}`
     
     const newKey: ApiKey = {
       id: `key_${Math.random()}`,
@@ -51,8 +51,13 @@ export class ApiKeyService {
     const key = keys.find(k => k.id === keyId)
     if (!key) return { ok: false, error: { code: 'NOT_FOUND', message: 'API Key not found' } }
     
-    if (user && user.role.startsWith('customer') && key.organizationId !== user.organizationId) {
-       return { ok: false, error: { code: 'FORBIDDEN', message: 'Access denied' } }
+    if (user && user.role.startsWith('customer')) {
+       if (key.organizationId !== user.organizationId) {
+         return { ok: false, error: { code: 'FORBIDDEN', message: 'Access denied' } }
+       }
+       if (user.role === 'customer_member') {
+         return { ok: false, error: { code: 'FORBIDDEN', message: 'Members cannot revoke API keys' } }
+       }
     }
     
     key.status = 'revoked'

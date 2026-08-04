@@ -3,6 +3,10 @@ import { subscriptionService } from '../../services/mock/subscriptionService'
 import { Subscription as SubscriptionModel } from '../../domain/models'
 import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
+import { PageHeader } from '../../components/domain/PageHeader'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
+import { Download } from 'lucide-react'
 
 export function Subscription() {
   const { user } = useAuth()
@@ -13,102 +17,121 @@ export function Subscription() {
     const fetchSub = async () => {
       if (!user?.organizationId) return
       setLoading(true)
-      const res = await subscriptionService.getSubscription(user.organizationId)
+      const res = await subscriptionService.getSubscription(user.organizationId, user)
       if (res.ok) setSubscription(res.data)
       setLoading(false)
     }
     fetchSub()
   }, [user])
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading subscription details...</div>
-  if (!subscription) return <div className="p-8 text-center text-red-500">Subscription not found</div>
+  if (loading) return <div className="p-12 text-center text-sm text-muted-foreground">Loading subscription details...</div>
+  if (!subscription) return <div className="p-12 text-center text-destructive font-medium">Subscription not found</div>
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-slate-900">Subscription & Billing</h1>
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6">
+      <PageHeader 
+        title="Subscription & Billing" 
+        description="Manage your plan, billing cycle, and view usage limits."
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Current Plan</h2>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full uppercase tracking-wide ${subscription.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <Card className="flex flex-col">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <CardTitle>Current Plan</CardTitle>
+              <span className={`px-2.5 py-1 text-[10px] font-bold rounded-sm uppercase tracking-wider ${subscription.status === 'active' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                 {subscription.status}
               </span>
             </div>
-            <p className="text-3xl font-bold text-indigo-700 mb-1">{subscription.planName}</p>
-            <p className="text-slate-500 text-sm">Billed annually. Next charge on {formatDate(subscription.renewalDate)}.</p>
-          </div>
-          
-          <div className="mt-8 flex gap-3">
-            <button className="btn btn-primary bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded font-medium disabled:opacity-50" disabled>Manage Billing</button>
-            <button className="btn btn-secondary border border-slate-300 hover:bg-slate-50 px-4 py-2 rounded font-medium disabled:opacity-50" disabled>Change Plan</button>
-          </div>
-          <p className="text-xs text-slate-400 mt-2 italic">* Billing management is disabled in demo mode.</p>
-        </div>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col justify-between">
+            <div>
+              <p className="text-4xl font-bold text-primary mb-2">{subscription.planName}</p>
+              <p className="text-muted-foreground text-sm font-medium">Billed annually. Next charge on <span className="text-foreground">{formatDate(subscription.renewalDate)}</span>.</p>
+            </div>
+            
+            <div className="mt-8 space-y-3">
+              <div className="flex flex-wrap gap-3">
+                <Button disabled>Manage Billing</Button>
+                <Button variant="outline" disabled>Change Plan</Button>
+              </div>
+              <p className="text-xs font-medium text-muted-foreground bg-muted/50 p-2 rounded inline-block">* Billing management is disabled in demo mode.</p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Usage Limits</h2>
-          
-          <div className="flex flex-col gap-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-slate-700">Team Members</span>
-                <span className="text-slate-500">12 / Unlimited</span>
+        <Card>
+          <CardHeader>
+            <CardTitle>Usage Limits</CardTitle>
+            <CardDescription>Track your usage across your workspace.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-foreground">Team Members</span>
+                <span className="text-muted-foreground">12 / <span className="text-foreground">Unlimited</span></span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '15%' }}></div>
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-slate-700">API Requests</span>
-                <span className="text-slate-500">1.2M / 10M</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '12%' }}></div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
+                <div className="bg-primary h-full rounded-full" style={{ width: '15%' }}></div>
               </div>
             </div>
             
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-slate-700">Storage</span>
-                <span className="text-slate-500">45GB / 100GB</span>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-foreground">API Requests</span>
+                <span className="text-muted-foreground">1.2M / <span className="text-foreground">10M</span></span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-2">
-                <div className="bg-amber-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
+                <div className="bg-blue-500 h-full rounded-full" style={{ width: '12%' }}></div>
               </div>
             </div>
-          </div>
-        </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-foreground">Storage</span>
+                <span className="text-muted-foreground">45GB / <span className="text-foreground">100GB</span></span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden border border-border">
+                <div className="bg-amber-500 h-full rounded-full" style={{ width: '45%' }}></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
-          <h3 className="font-semibold text-slate-800">Billing History</h3>
+      <Card>
+        <CardHeader className="border-b border-border bg-muted/30 pb-4">
+          <CardTitle className="text-base">Billing History</CardTitle>
+        </CardHeader>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="text-muted-foreground border-b border-border bg-muted/10">
+              <tr>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider">Date</th>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider">Description</th>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider">Amount</th>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider">Status</th>
+                <th className="p-4 text-xs font-semibold uppercase tracking-wider text-right">Invoice</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              <tr className="hover:bg-muted/30 transition-colors">
+                <td className="p-4 text-muted-foreground font-medium">{formatDate(subscription.startDate)}</td>
+                <td className="p-4 text-foreground font-semibold">Enterprise Annual Renewal</td>
+                <td className="p-4 font-mono text-muted-foreground">$12,000.00</td>
+                <td className="p-4">
+                  <span className="text-xs font-bold text-success bg-success/10 px-2.5 py-1 rounded-sm uppercase tracking-wider">Paid</span>
+                </td>
+                <td className="p-4 text-right">
+                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary gap-2">
+                    <Download className="w-4 h-4" /> Download PDF
+                  </Button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500">
-            <tr>
-              <th className="p-4 font-medium">Date</th>
-              <th className="p-4 font-medium">Description</th>
-              <th className="p-4 font-medium">Amount</th>
-              <th className="p-4 font-medium">Status</th>
-              <th className="p-4 font-medium">Invoice</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            <tr className="hover:bg-slate-50">
-              <td className="p-4">{formatDate(subscription.startDate)}</td>
-              <td className="p-4 text-slate-900 font-medium">Enterprise Annual Renewal</td>
-              <td className="p-4">$12,000.00</td>
-              <td className="p-4"><span className="text-green-600 font-medium bg-green-50 px-2 py-1 rounded">Paid</span></td>
-              <td className="p-4"><button className="text-indigo-600 hover:underline">Download PDF</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      </Card>
     </div>
   )
 }

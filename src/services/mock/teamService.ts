@@ -53,9 +53,18 @@ export class TeamService {
       if (member.organizationId !== user.organizationId) {
          return failure({ code: 'FORBIDDEN', message: 'Access denied' });
       }
+      
+      // Prevent demoting the last owner
+      if (member.role === 'customer_owner' && newRole !== 'customer_owner') {
+        const storedMembers = stored.members || [];
+        const activeOwners = storedMembers.filter((m: OrganizationMember) => m.organizationId === user.organizationId && m.role === 'customer_owner' && m.status === 'active');
+        if (activeOwners.length <= 1) {
+           return failure({ code: 'FORBIDDEN', message: 'Cannot demote the last active owner' });
+        }
+      }
     }
     
-    member.role = newRole;
+    member.role = newRole as any;
     localStorage.setItem('resolveops_demo_state', JSON.stringify(stored));
     return success(member);
   }

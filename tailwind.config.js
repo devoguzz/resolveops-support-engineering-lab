@@ -11,6 +11,9 @@ export default {
         danger: '#ef4444',
         success: '#22c55e',
         muted: '#64748b'
+      },
+      animation: {
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }
     },
   },

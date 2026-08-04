@@ -1,0 +1,7 @@
+# GitHub Linguist - Dil tespitini TypeScript olarak zorla
+*.tsx linguist-language=TypeScript
+*.ts linguist-language=TypeScript
+
+# index.html'i dil istatistiğinden çıkar
+index.html linguist-detectable=false
+public/* linguist-detectable=false

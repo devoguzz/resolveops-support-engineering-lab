@@ -1,9 +1,13 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { teamService } from '../../services/mock/teamService';
 import { useAuth } from '../../store/authStore';
-import { LoadingState, StatusBadge } from '../../components/shared';
+import { LoadingState } from '../../components/shared';
+import { PageHeader } from '../../components/domain/PageHeader';
+import { StatusBadge } from '../../components/domain/StatusBadge';
+import { Card, CardContent } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Plus, Search } from 'lucide-react';
 
 export function TeamList() {
   const { user } = useAuth();
@@ -29,67 +33,99 @@ export function TeamList() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  return <div className="p-6 flex flex-col gap-6 max-w-7xl mx-auto">
-    <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-        <div>
-            <h1 className="text-2xl font-bold text-slate-900">Team Members</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage who has access to your organization.</p>
-        </div>
-        <button className="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">Invite Member</button>
-    </div>
-    
-    <div className="flex gap-4 mb-2 bg-slate-50 p-4 rounded-lg border border-slate-200">
-        <input type="text" placeholder="Search by name or email..." className="form-input flex-1 px-4 py-2 border rounded-md" value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="form-input w-48 px-4 py-2 border rounded-md" value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
-            <option value="">All Roles</option>
-            <option value="customer_owner">Owner</option>
-            <option value="customer_member">Member</option>
-        </select>
-        <select className="form-input w-48 px-4 py-2 border rounded-md" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-        </select>
-    </div>
+  return (
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <PageHeader 
+          title="Team Members" 
+          description="Manage who has access to your organization."
+        />
+        <Button className="flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Invite Member
+        </Button>
+      </div>
+      
+      <Card className="bg-muted/30">
+        <CardContent className="p-4 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="Search by name or email..." 
+              className="w-full pl-9 pr-4 py-2 bg-background border border-border text-foreground rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+            />
+          </div>
+          <div className="flex gap-4">
+            <select 
+              className="w-48 bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+              value={roleFilter} 
+              onChange={e => setRoleFilter(e.target.value)}
+            >
+              <option value="">All Roles</option>
+              <option value="customer_owner">Owner</option>
+              <option value="customer_member">Member</option>
+            </select>
+            <select 
+              className="w-48 bg-background border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all" 
+              value={statusFilter} 
+              onChange={e => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
 
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <Card>
         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">User</th>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Joined</th>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Last Active</th>
-                        <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {filtered.map(m => (
-                        <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="p-4">
-                                <div className="flex flex-col">
-                                    <span className="font-medium text-slate-900">{m.user?.fullName || m.userId}</span>
-                                    <span className="text-sm text-slate-500">{m.user?.email || ''}</span>
-                                </div>
-                            </td>
-                            <td className="p-4"><span className="text-sm text-slate-700 capitalize">{m.role.replace('customer_', '')}</span></td>
-                            <td className="p-4"><StatusBadge status={m.status} /></td>
-                            <td className="p-4 text-sm text-slate-500">{new Date(m.joinedAt).toLocaleDateString()}</td>
-                            <td className="p-4 text-sm text-slate-500">{new Date(m.lastActiveAt).toLocaleDateString()}</td>
-                            <td className="p-4 text-right">
-                                <Link to={`/app/team/${m.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 hover:bg-blue-50 rounded transition-colors">Manage</Link>
-                            </td>
-                        </tr>
-                    ))}
-                    {filtered.length === 0 && (
-                        <tr><td colSpan={6} className="p-8 text-center text-slate-500">No members match your filters.</td></tr>
-                    )}
-                </tbody>
-            </table>
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-muted/30 border-b border-border">
+              <tr>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</th>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined</th>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last Active</th>
+                <th className="p-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filtered.map(m => (
+                <tr key={m.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="p-4">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-foreground">{m.user?.fullName || m.userId}</span>
+                      <span className="text-sm font-medium text-muted-foreground">{m.user?.email || ''}</span>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className="text-sm font-medium text-foreground capitalize">{m.role.replace('customer_', '')}</span>
+                  </td>
+                  <td className="p-4"><StatusBadge status={m.status} /></td>
+                  <td className="p-4 text-sm font-medium text-muted-foreground">{new Date(m.joinedAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-sm font-medium text-muted-foreground">{new Date(m.lastActiveAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-right">
+                    <Link to={`/app/team/${m.id}`}>
+                      <Button variant="ghost" size="sm">Manage</Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-12 text-center text-sm text-muted-foreground">
+                    No members match your filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
+      </Card>
     </div>
-  </div>;
+  );
 }
-
