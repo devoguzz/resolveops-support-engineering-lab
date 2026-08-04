@@ -1,0 +1,1 @@
+export function NotFound() { return <div className="p-4"><h2>System NotFound</h2><p>Not implemented yet.</p></div> }

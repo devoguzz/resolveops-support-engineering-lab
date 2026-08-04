@@ -1,0 +1,1 @@
+export function Forbidden() { return <div className="p-4"><h2>System Forbidden</h2><p>Not implemented yet.</p></div> }
