@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../store/authStore'
 import { 
   LayoutDashboard, LifeBuoy, Webhook, Blocks, KeySquare, 
-  Users, Activity, LogOut, Search, Bell, Menu, Hexagon
+  Users, Activity, LogOut, Menu, Hexagon, CreditCard
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -31,6 +31,10 @@ export function CustomerLayout() {
     { name: 'Team', path: '/app/team', icon: Users },
     { name: 'Activity Log', path: '/app/activity', icon: Activity },
   ]
+
+  if (user?.role === 'customer_owner') {
+    navItems.push({ name: 'Subscription', path: '/app/subscription', icon: CreditCard })
+  }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-sans selection:bg-primary/30">
@@ -114,28 +118,6 @@ export function CustomerLayout() {
             >
               <Menu className="w-[20px] h-[20px]" />
             </button>
-            
-            <div className="h-5 w-[1px] bg-border hidden sm:block"></div>
-            
-            <div className="relative hidden sm:block group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[16px] h-[16px] text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Search tickets, logs, webhooks..." 
-                className="pl-10 pr-4 py-2 w-[340px] bg-muted/50 border border-border rounded-lg text-[14px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:bg-background transition-all"
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                 <kbd className="px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground bg-background border border-border rounded shadow-sm">⌘</kbd>
-                 <kbd className="px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground bg-background border border-border rounded shadow-sm">K</kbd>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-             <button className="relative p-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors group">
-               <Bell className="w-[20px] h-[20px] group-hover:text-foreground transition-colors" />
-               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-destructive border-2 border-card rounded-full"></span>
-             </button>
           </div>
         </header>
 

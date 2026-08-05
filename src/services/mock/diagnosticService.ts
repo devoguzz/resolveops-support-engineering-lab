@@ -87,5 +87,47 @@ export class DiagnosticService {
     const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
     return success(stored.incidents || [])
   }
+
+  async getCustomerDashboardMetrics(organizationId: string): Promise<ServiceResult<any>> {
+    await simulateNetworkDelay(300)
+    // Dynamic generation based on organization
+    const seed = organizationId.charCodeAt(0) + organizationId.charCodeAt(organizationId.length - 1)
+    
+    // Generate some stable random-ish data based on org id
+    const apiRequestsToday = 100000 + (seed * 1000)
+    const apiTrend = { value: '+12%', positive: true }
+    
+    // Generate chart data
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const chartData = days.map((day, i) => ({
+      name: day,
+      requests: Math.floor(80000 + (Math.sin(seed + i) * 20000) + (i * 5000))
+    }))
+    
+    // Platform status
+    const platformStatus = {
+      status: 'operational',
+      title: 'All Systems Operational',
+      description: 'API and core services are running normally.',
+      updated: '10 MINS AGO'
+    }
+
+    // In a real app we would check active incidents impacting this org
+    const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
+    const incidents = stored.incidents || []
+    if (incidents.some((i: any) => i.status === 'active' && i.severity === 'critical')) {
+        platformStatus.status = 'degraded'
+        platformStatus.title = 'Degraded Performance'
+        platformStatus.description = 'We are actively investigating intermittent delays in webhook deliveries. Core APIs remain fully functional.'
+        platformStatus.updated = '2 MINS AGO'
+    }
+
+    return success({
+      apiRequestsToday,
+      apiTrend,
+      chartData,
+      platformStatus
+    })
+  }
 }
 export const diagnosticService = new DiagnosticService()

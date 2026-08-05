@@ -45,10 +45,25 @@ export class IntegrationService {
     return success(item)
   }
 
-  async testConnection(_id: string): Promise<ServiceResult<{ success: boolean, message: string }>> {
+  async testConnection(id: string): Promise<ServiceResult<{ success: boolean, message: string, integration: Integration }>> {
     await simulateNetworkDelay(800)
-    // Simulate a successful connection for the demo
-    return success({ success: true, message: 'Connection established successfully.' })
+    const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
+    const items: Integration[] = stored.integrations || INTEGRATIONS
+    const item = items.find(i => i.id === id)
+    if (!item) return { ok: false, error: { code: 'NOT_FOUND', message: 'Integration not found' } }
+
+    const isSuccess = Math.random() > 0.2 // 80% success for demo
+
+    item.lastSyncAt = new Date().toISOString()
+    item.status = isSuccess ? 'active' : 'error'
+    
+    localStorage.setItem('resolveops_demo_state', JSON.stringify(stored))
+    
+    if (isSuccess) {
+      return success({ success: true, message: 'Connection established successfully.', integration: item })
+    } else {
+      return success({ success: false, message: 'Connection failed. Please check credentials.', integration: item })
+    }
   }
 }
 

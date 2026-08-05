@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { teamService } from '../../services/mock/teamService';
 import { activityService } from '../../services/mock/activityService';
+import { formatDate } from '../../lib/dates';
 import { useAuth } from '../../store/authStore';
 import { LoadingState, Toast } from '../../components/shared';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
 
 export function TeamMemberDetail() {
   const { memberId } = useParams();
@@ -19,6 +21,9 @@ export function TeamMemberDetail() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' as any });
   
+  const [toggling, setToggling] = useState(false);
+  const [toggleState, setToggleState] = useState<'idle' | 'success'>('idle');
+
   const isOwner = user?.role === 'customer_owner';
 
   const loadData = async () => {
@@ -50,11 +55,15 @@ export function TeamMemberDetail() {
   };
 
   const handleStatusToggle = async () => {
+    setToggling(true);
+    setToggleState('idle');
     if (member.status === 'active') {
        const res = await teamService.deactivateMember(memberId!, user);
        if (res.ok) {
          setToast({ show: true, message: 'Member deactivated successfully', type: 'success' });
          setMember({ ...member, status: 'inactive' });
+         setToggleState('success');
+         setTimeout(() => setToggleState('idle'), 2000);
        } else {
          setToast({ show: true, message: res.error?.message || 'Error deactivating member', type: 'error' });
        }
@@ -62,6 +71,7 @@ export function TeamMemberDetail() {
        // Mock activating
        setToast({ show: true, message: 'Re-activation is not supported in demo', type: 'error' });
     }
+    setToggling(false);
     setTimeout(() => setToast(t => ({ ...t, show: false })), 3000);
   };
 
@@ -107,7 +117,7 @@ export function TeamMemberDetail() {
                            <span className="bg-muted px-2 py-0.5 rounded-sm">Result: {act.result}</span>
                          </p>
                      </div>
-                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{new Date(act.timestamp).toLocaleString()}</span>
+                     <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">{formatDate(act.timestamp)}</span>
                  </div>
                )) : (
                  <div className="p-12 text-center text-sm text-muted-foreground">No recent activity</div>
@@ -135,7 +145,7 @@ export function TeamMemberDetail() {
                       <option value="customer_member">Member</option>
                     </select>
                   ) : (
-                    <span className="font-semibold text-foreground capitalize block bg-muted/50 border border-border px-3 py-2 rounded-md">{member.role.replace('customer_', '')}</span>
+                    <span className="font-semibold text-foreground capitalize block bg-muted/50 border border-border px-3 py-2 rounded-md"><AnimatedStatus status={member.role.replace('customer_', '')} /></span>
                   )}
                 </div>
                 <div className="space-y-1">
@@ -144,7 +154,7 @@ export function TeamMemberDetail() {
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Last Active</span>
-                  <span className="font-medium text-foreground">{new Date(member.lastActiveAt).toLocaleString()}</span>
+                  <span className="font-medium text-foreground">{formatDate(member.lastActiveAt)}</span>
                 </div>
               </div>
             </CardContent>
@@ -161,10 +171,10 @@ export function TeamMemberDetail() {
                 <Button 
                   variant="outline"
                   onClick={handleStatusToggle}
-                  disabled={member.userId === user?.id}
+                  disabled={member.userId === user?.id || toggling || toggleState === 'success'}
                   className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                 >
-                  {member.status === 'active' ? 'Deactivate Member' : 'Activate Member'}
+                  <AnimatedStatus status={toggling ? (member.status === 'active' ? 'Deactivating...' : 'Activating...') : toggleState === 'success' ? (member.status === 'inactive' ? 'Deactivated' : 'Activated') : (member.status === 'active' ? 'Deactivate Member' : 'Activate Member')} />
                 </Button>
               </CardContent>
             </Card>

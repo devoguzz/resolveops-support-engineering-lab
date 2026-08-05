@@ -4,6 +4,8 @@ import { ticketService } from '../../services/mock/ticketService'
 import { TicketMessage, InternalNote, SupportTicket } from '../../domain/models'
 import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
+import { BorderBeam } from '../../components/ui/border-beam'
 
 export function SupportTicketDetail() {
   const { ticketId } = useParams()
@@ -17,7 +19,10 @@ export function SupportTicketDetail() {
   const [activeTab, setActiveTab] = useState<'overview' | 'conversation' | 'notes' | 'investigation'>('overview')
   const [replyText, setReplyText] = useState('')
   const [noteText, setNoteText] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [submittingReply, setSubmittingReply] = useState(false)
+  const [replyState, setReplyState] = useState<'idle' | 'success'>('idle')
+  const [submittingNote, setSubmittingNote] = useState(false)
+  const [noteState, setNoteState] = useState<'idle' | 'success'>('idle')
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -41,25 +46,31 @@ export function SupportTicketDetail() {
   const handleReply = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!ticketId || !user?.id || !replyText) return
-    setSubmitting(true)
+    setSubmittingReply(true)
+    setReplyState('idle')
     const res = await ticketService.addMessage(ticketId, replyText, user.id)
     if (res.ok) {
       setMessages([...messages, res.data])
       setReplyText('')
+      setReplyState('success')
+      setTimeout(() => setReplyState('idle'), 2000)
     }
-    setSubmitting(false)
+    setSubmittingReply(false)
   }
 
   const handleNote = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!ticketId || !user?.id || !noteText) return
-    setSubmitting(true)
+    setSubmittingNote(true)
+    setNoteState('idle')
     const res = await ticketService.addInternalNote(ticketId, noteText, user.id)
     if (res.ok) {
       setNotes([...notes, res.data])
       setNoteText('')
+      setNoteState('success')
+      setTimeout(() => setNoteState('idle'), 2000)
     }
-    setSubmitting(false)
+    setSubmittingNote(false)
   }
 
   if (loading) return <div className="p-4">Loading ticket...</div>
@@ -72,7 +83,7 @@ export function SupportTicketDetail() {
         <div>
           <h1 className="text-2xl font-bold">{ticket.subject}</h1>
           <p className="text-sm text-muted mt-1">
-            {ticket.id} • {ticket.status} • Priority: {ticket.priority} • Organization: <Link to={`/support/customers/${ticket.organizationId}`} className="text-primary hover:underline">{ticket.organizationId}</Link>
+            {ticket.id} • <AnimatedStatus status={ticket.status} /> • Priority: <AnimatedStatus status={ticket.priority} /> • Organization: <Link to={`/support/customers/${ticket.organizationId}`} className="text-primary hover:underline">{ticket.organizationId}</Link>
           </p>
         </div>
         <div className="flex gap-2">
@@ -81,8 +92,9 @@ export function SupportTicketDetail() {
         </div>
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <div className="flex border-b border-gray-200 bg-slate-50">
+      <div className="card p-0 overflow-hidden relative">
+        {ticket.priority.toUpperCase() === 'P1' && <BorderBeam colorFrom="#ef4444" colorTo="#f59e0b" duration={20} />}
+        <div className="flex border-b border-gray-200 bg-slate-50 relative z-10">
           <button onClick={() => setActiveTab('overview')} className={`px-4 py-3 text-sm font-medium border-b-2 ${activeTab === 'overview' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-slate-900'}`}>Overview</button>
           <button onClick={() => setActiveTab('conversation')} className={`px-4 py-3 text-sm font-medium border-b-2 ${activeTab === 'conversation' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-slate-900'}`}>Conversation ({messages.length})</button>
           <button onClick={() => setActiveTab('notes')} className={`px-4 py-3 text-sm font-medium border-b-2 ${activeTab === 'notes' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-slate-900'}`}>Internal Notes ({notes.length})</button>
@@ -135,7 +147,9 @@ export function SupportTicketDetail() {
                   className="form-input w-full h-24"
                   required
                 />
-                <button type="submit" disabled={submitting || !replyText} className="btn btn-primary self-end">Send Reply</button>
+                <button type="submit" disabled={submittingReply || !replyText || replyState === 'success'} className="btn btn-primary self-end">
+                   <AnimatedStatus status={submittingReply ? 'Sending...' : replyState === 'success' ? 'Sent' : 'Send Reply'} />
+                </button>
               </form>
             </div>
           )}
@@ -165,7 +179,9 @@ export function SupportTicketDetail() {
                   className="form-input w-full h-24 bg-yellow-50 border-yellow-200 focus:border-yellow-400"
                   required
                 />
-                <button type="submit" disabled={submitting || !noteText} className="btn btn-secondary self-end text-yellow-900 border-yellow-300 hover:bg-yellow-100">Add Internal Note</button>
+                <button type="submit" disabled={submittingNote || !noteText || noteState === 'success'} className="btn btn-secondary self-end text-yellow-900 border-yellow-300 hover:bg-yellow-100">
+                  <AnimatedStatus status={submittingNote ? 'Saving...' : noteState === 'success' ? 'Saved' : 'Add Internal Note'} />
+                </button>
               </form>
             </div>
           )}

@@ -8,6 +8,7 @@ import { StatusBadge } from '../../components/domain/StatusBadge';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Plus, Search } from 'lucide-react';
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
 
 export function TeamList() {
   const { user } = useAuth();
@@ -16,13 +17,36 @@ export function TeamList() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteState, setInviteState] = useState<'idle' | 'success'>('idle');
+
+  const loadMembers = async () => {
+    setLoading(true);
+    const res: any = await teamService.listMembers(user?.organizationId || '', user);
+    if (res.ok) setMembers(res.data);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    teamService.listMembers(user?.organizationId || '', user).then((res: any) => {
-      if (res.ok) setMembers(res.data);
-      setLoading(false);
-    });
+    if (user) loadMembers();
   }, [user]);
+
+  const handleInvite = async () => {
+    const email = prompt('Enter email address to invite:');
+    if (!email) return;
+    setInviting(true);
+    setInviteState('idle');
+    const res: any = await teamService.inviteMember?.(user?.organizationId || '', email, user);
+    if (res?.ok) {
+      alert(`Invitation sent to ${email}`);
+      await loadMembers();
+      setInviteState('success');
+      setTimeout(() => setInviteState('idle'), 2000);
+    } else {
+      alert(res?.error?.message || 'Failed to invite member. Not implemented in mock service.');
+    }
+    setInviting(false);
+  };
 
   if (loading) return <LoadingState />;
 
@@ -40,9 +64,11 @@ export function TeamList() {
           title="Team Members" 
           description="Manage who has access to your organization."
         />
-        <Button className="flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Invite Member
-        </Button>
+        {user?.role === 'customer_owner' && (
+          <Button className="flex items-center gap-2" onClick={handleInvite} disabled={inviting || inviteState === 'success'}>
+            <Plus className="w-4 h-4" /> <AnimatedStatus status={inviting ? 'Sending...' : inviteState === 'success' ? 'Invited' : 'Invite Member'} />
+          </Button>
+        )}
       </div>
       
       <Card className="bg-muted/30">

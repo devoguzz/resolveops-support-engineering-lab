@@ -5,14 +5,31 @@ import { ActivityEvent } from '../../domain/models'
 import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
 import { PageHeader } from '../../components/domain/PageHeader'
+import { LoadingState } from '../../components/shared'
 import { Card, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
+import { Download } from 'lucide-react'
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
+
+const ACTION_LABELS: Record<string, string> = {
+  'user.login': 'User Logged In',
+  'ticket.created': 'Support Request Created',
+  'ticket.reply': 'Support Request Replied',
+  'webhook.retry': 'Webhook Retried',
+  'apikey.create': 'API Key Created',
+  'apikey.revoke': 'API Key Revoked',
+  'user.invite': 'User Invited',
+  'user.role_change': 'Role Changed',
+  'integration.toggle': 'Integration Toggled'
+}
 
 export function ActivityLog() {
   const { user } = useAuth()
   const [searchParams, setSearchParams] = useState(new URLSearchParams())
   const [events, setEvents] = useState<ActivityEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const [exportState, setExportState] = useState<'idle' | 'success'>('idle')
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -40,12 +57,30 @@ export function ActivityLog() {
     setSearchParams(newParams)
   }
 
+  if (loading) return <LoadingState />
+
+  const handleExport = () => {
+    setExporting(true)
+    setExportState('idle')
+    setTimeout(() => {
+      setExporting(false)
+      setExportState('success')
+      setTimeout(() => setExportState('idle'), 2000)
+    }, 1500)
+  }
+
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">
-      <PageHeader 
-        title="Activity Log" 
-        description="Audit trail of actions performed in your organization."
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <PageHeader 
+          title="Activity Log" 
+          description="Audit trail of actions performed in your organization."
+        />
+        <Button variant="outline" className="flex items-center gap-2" onClick={handleExport} disabled={exporting || exportState === 'success'}>
+          <Download className="w-4 h-4" />
+          <AnimatedStatus status={exporting ? 'Exporting...' : exportState === 'success' ? 'Exported' : 'Export CSV'} />
+        </Button>
+      </div>
       
       <Card className="bg-muted/30">
         <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-end">
@@ -88,9 +123,6 @@ export function ActivityLog() {
 
       <Card>
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-12 text-center text-sm text-muted-foreground">Loading activity...</div>
-          ) : (
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-muted/30 border-b border-border">
                 <tr>
@@ -113,7 +145,7 @@ export function ActivityLog() {
                   <tr key={e.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4 text-muted-foreground font-medium">{formatDate(e.timestamp)}</td>
                     <td className="p-4 font-semibold text-foreground">{e.actorId === user?.id ? 'You' : e.actorId}</td>
-                    <td className="p-4 font-mono text-xs text-primary">{e.action}</td>
+                    <td className="p-4 font-medium text-foreground">{ACTION_LABELS[e.action] || e.action}</td>
                     <td className="p-4 font-mono text-xs text-muted-foreground">{e.resource}</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 text-xs font-bold uppercase tracking-wide rounded-md ${e.result === 'success' ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'}`}>
@@ -125,7 +157,6 @@ export function ActivityLog() {
                 ))}
               </tbody>
             </table>
-          )}
         </div>
       </Card>
     </div>

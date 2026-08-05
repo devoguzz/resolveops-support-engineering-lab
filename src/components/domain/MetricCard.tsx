@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { LucideIcon } from "lucide-react"
+import { ReactNode } from "react"
 
 interface MetricCardProps {
   title: string
-  value: string | number
+  value: ReactNode
   icon: LucideIcon
   trend?: {
     value: string

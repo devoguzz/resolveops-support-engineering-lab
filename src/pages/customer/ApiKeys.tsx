@@ -7,6 +7,8 @@ import { PageHeader } from '../../components/domain/PageHeader'
 import { Card, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { X, Copy } from 'lucide-react'
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
+import { BorderBeam } from '../../components/ui/border-beam'
 
 export function ApiKeys() {
   const { user } = useAuth()
@@ -14,7 +16,11 @@ export function ApiKeys() {
   const [loading, setLoading] = useState(true)
   const [newKeyData, setNewKeyData] = useState<{name: string, secret: string} | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [createState, setCreateState] = useState<'idle' | 'success'>('idle')
+  const [copyState, setCopyState] = useState<'idle' | 'success'>('idle')
   const [newKeyName, setNewKeyName] = useState('')
+  const [revokingId, setRevokingId] = useState<string | null>(null)
+  const [revokedId, setRevokedId] = useState<string | null>(null)
 
   const loadKeys = async () => {
     if (!user?.organizationId) return
@@ -32,20 +38,38 @@ export function ApiKeys() {
     e.preventDefault()
     if (!user?.organizationId || !newKeyName) return
     setIsCreating(true)
+    setCreateState('idle')
     const res = await apiKeyService.createKey(user.organizationId, newKeyName, user.id, user)
     if (res.ok) {
       setNewKeyData({ name: newKeyName, secret: res.data.secret })
       setNewKeyName('')
       await loadKeys()
+      setCreateState('success')
+      setTimeout(() => setCreateState('idle'), 2000)
     }
     setIsCreating(false)
   }
 
+  const handleCopy = () => {
+    if (!newKeyData) return
+    navigator.clipboard.writeText(newKeyData.secret)
+    setCopyState('success')
+    setTimeout(() => setCopyState('idle'), 2000)
+  }
+
   const handleRevoke = async (id: string) => {
     if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) return
+    setRevokingId(id)
     const res = await apiKeyService.revokeKey(id, user)
     if (res.ok) {
-      await loadKeys()
+      setRevokedId(id)
+      setTimeout(async () => {
+        await loadKeys()
+        setRevokingId(null)
+        setRevokedId(null)
+      }, 1000)
+    } else {
+      setRevokingId(null)
     }
   }
 
@@ -57,7 +81,8 @@ export function ApiKeys() {
       />
       
       {newKeyData && (
-        <Card className="bg-success/10 border-success/20 relative">
+        <Card className="bg-success/10 border-success/20 relative overflow-hidden">
+          <BorderBeam colorFrom="var(--color-success)" colorTo="var(--color-success)" duration={5} />
           <Button 
             variant="ghost" 
             size="icon" 
@@ -73,10 +98,10 @@ export function ApiKeys() {
               <code className="flex-1 bg-background/50 p-3 rounded-md border border-success/20 font-mono text-success select-all">{newKeyData.secret}</code>
               <Button 
                 variant="outline"
-                className="bg-background/50 border-success/20 text-success hover:bg-success/20 hover:text-success flex items-center gap-2" 
-                onClick={() => navigator.clipboard.writeText(newKeyData.secret)}
+                className="bg-background/50 border-success/20 text-success hover:bg-success/20 hover:text-success flex items-center gap-2 relative z-10" 
+                onClick={handleCopy}
               >
-                <Copy className="w-4 h-4" /> Copy
+                <Copy className="w-4 h-4" /> <AnimatedStatus status={copyState === 'success' ? 'Copied' : 'Copy'} />
               </Button>
             </div>
           </CardContent>
@@ -100,10 +125,10 @@ export function ApiKeys() {
               />
               <Button 
                 type="submit" 
-                disabled={isCreating || !newKeyName || user?.role !== 'customer_owner'} 
+                disabled={isCreating || !newKeyName || user?.role !== 'customer_owner' || createState === 'success'} 
                 className="w-full"
               >
-                {isCreating ? 'Creating...' : 'Generate Key'}
+                <AnimatedStatus status={isCreating ? 'Generating...' : createState === 'success' ? 'Key Created' : 'Generate Key'} />
               </Button>
               {user?.role !== 'customer_owner' && (
                 <p className="text-xs text-muted-foreground mt-1 font-medium bg-muted/50 p-2 rounded border border-border text-center">
@@ -144,10 +169,10 @@ export function ApiKeys() {
                           <Button 
                             variant="ghost"
                             onClick={() => handleRevoke(k.id)}
-                            disabled={user?.role !== 'customer_owner'}
+                            disabled={user?.role !== 'customer_owner' || revokingId === k.id || revokedId === k.id}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-3"
                           >
-                            Revoke
+                            <AnimatedStatus status={revokedId === k.id ? 'Revoked' : revokingId === k.id ? 'Revoking...' : 'Revoke'} />
                           </Button>
                         </td>
                       </tr>

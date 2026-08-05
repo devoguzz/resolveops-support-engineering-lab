@@ -5,9 +5,12 @@ import { Integration } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 import { useAuth } from '../../store/authStore'
 import { StatusBadge } from '../../components/domain/StatusBadge'
+import { Toast } from '../../components/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { ArrowLeft, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
+import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
+import { BorderBeam } from '../../components/ui/border-beam'
 
 export function IntegrationDetail() {
   const { integrationId } = useParams()
@@ -34,8 +37,19 @@ export function IntegrationDetail() {
     setTesting(true)
     setTestResult(null)
     const res = await integrationService.testConnection(integrationId)
-    if (res.ok) setTestResult(res.data)
+    if (res.ok) {
+      setTestResult({ success: res.data.success, message: res.data.message })
+      if (res.data.integration) setIntegration(res.data.integration)
+      
+      setTimeout(() => setTestResult(null), 4000)
+    }
     setTesting(false)
+  }
+
+  const getButtonText = () => {
+    if (testing) return 'Testing...'
+    if (testResult) return testResult.success ? 'Connected' : 'Connection Failed'
+    return 'Test Connection'
   }
 
   const handleToggle = async (enabled: boolean) => {
@@ -49,6 +63,7 @@ export function IntegrationDetail() {
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">
+      {testResult && <Toast message={testResult.message} type={testResult.success ? 'success' : 'error'} />}
       <div>
         <Link to="/app/integrations" className="inline-flex items-center text-sm font-medium text-primary hover:underline gap-1 mb-4">
           <ArrowLeft className="w-4 h-4" /> Back to Integrations
@@ -90,8 +105,11 @@ export function IntegrationDetail() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-border">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="pt-6 border-t border-border relative overflow-hidden rounded-md -mx-6 px-6 pb-6">
+            {testing && <BorderBeam colorFrom="var(--color-primary)" colorTo="var(--color-ring)" duration={10} />}
+            {testResult && testResult.success && <BorderBeam colorFrom="var(--color-success)" colorTo="var(--color-success)" duration={5} />}
+            {testResult && !testResult.success && <BorderBeam colorFrom="var(--color-destructive)" colorTo="var(--color-destructive)" duration={5} />}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-2">
               <div className="space-y-1">
                 <h3 className="font-semibold text-foreground text-base">Connection Health</h3>
                 <p className="text-sm text-muted-foreground">Test your connection to ensure the integration is working correctly.</p>
@@ -99,11 +117,11 @@ export function IntegrationDetail() {
               <Button 
                 variant="outline"
                 onClick={handleTestConnection} 
-                disabled={testing || integration.status === 'disabled'}
-                className="flex items-center gap-2"
+                disabled={testing || integration.status === 'disabled' || testResult !== null}
+                className="flex items-center gap-2 relative z-10"
               >
                 <RefreshCw className={`w-4 h-4 ${testing ? 'animate-spin' : ''}`} />
-                {testing ? 'Testing...' : 'Test Connection'}
+                <AnimatedStatus status={getButtonText()} />
               </Button>
             </div>
             

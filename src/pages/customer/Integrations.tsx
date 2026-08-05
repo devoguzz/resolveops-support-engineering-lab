@@ -6,6 +6,7 @@ import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
 import { StatusBadge } from '../../components/domain/StatusBadge'
 import { PageHeader } from '../../components/domain/PageHeader'
+import { LoadingState } from '../../components/shared'
 import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Plus } from 'lucide-react'
@@ -26,6 +27,8 @@ export function Integrations() {
     fetchIntegrations()
   }, [user])
 
+  if (loading) return <LoadingState />
+
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -33,16 +36,15 @@ export function Integrations() {
           title="Integrations" 
           description="Connect ResolveOps with your existing tools and services."
         />
-        <Button disabled className="flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Integration
-        </Button>
+        <div title={user?.role === 'customer_owner' ? 'Integrations can only be configured by support during the beta.' : 'Only organization owners can manage integrations.'}>
+          <Button disabled className="flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Integration
+          </Button>
+        </div>
       </div>
 
       <Card>
         <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-12 text-center text-sm text-muted-foreground">Loading integrations...</div>
-          ) : (
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-muted/30 border-b border-border">
                 <tr>
@@ -60,20 +62,23 @@ export function Integrations() {
                       No integrations configured.
                     </td>
                   </tr>
-                ) : integrations.map(i => (
-                  <tr key={i.id} className="hover:bg-muted/30 transition-colors">
+                ) : integrations.map(integration => (
+                  <tr key={integration.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-4">
-                      <Link to={`/app/integrations/${i.id}`} className="font-medium text-primary hover:underline">{i.name}</Link>
+                      <Link to={`/app/integrations/${integration.id}`} className="font-medium text-primary hover:underline">
+                        {integration.name}
+                      </Link>
                     </td>
-                    <td className="p-4 text-foreground font-medium">{i.type}</td>
-                    <td className="p-4 text-muted-foreground font-mono text-xs">{i.endpointHost}</td>
-                    <td className="p-4"><StatusBadge status={i.status} /></td>
-                    <td className="p-4 text-muted-foreground">{i.lastSyncAt ? formatDate(i.lastSyncAt) : 'Never'}</td>
+                    <td className="p-4 text-muted-foreground capitalize">{integration.type}</td>
+                    <td className="p-4 font-mono text-xs text-muted-foreground">{integration.endpointHost}</td>
+                    <td className="p-4"><StatusBadge status={integration.status} /></td>
+                    <td className="p-4 text-xs font-mono text-muted-foreground">
+                      {integration.lastSyncAt ? formatDate(integration.lastSyncAt) : 'Never'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
         </div>
       </Card>
     </div>

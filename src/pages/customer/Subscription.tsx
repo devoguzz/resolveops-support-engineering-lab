@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { subscriptionService } from '../../services/mock/subscriptionService'
 import { Subscription as SubscriptionModel } from '../../domain/models'
 import { useAuth } from '../../store/authStore'
@@ -23,6 +24,10 @@ export function Subscription() {
     }
     fetchSub()
   }, [user])
+
+  if (user?.role !== 'customer_owner') {
+    return <Navigate to="/403" replace />
+  }
 
   if (loading) return <div className="p-12 text-center text-sm text-muted-foreground">Loading subscription details...</div>
   if (!subscription) return <div className="p-12 text-center text-destructive font-medium">Subscription not found</div>

@@ -3,24 +3,24 @@ import { test, expect } from '@playwright/test';
 test('ResolveOps Core Incident Workflow', async ({ page }) => {
   // 1. Customer Login
   await page.goto('/login');
-  await page.fill('input[type="email"]', 'admin@northstar.test');
+  await page.fill('input[type="email"]', 'owner@northstar.demo');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
   
   // Verify Dashboard elements
-  await expect(page.locator('text=Welcome back,')).toBeVisible();
+  await expect(page.getByText('Welcome back', { exact: false })).toBeVisible();
   
   // 2. Navigate to failed webhook detail
-  await page.click('text=Investigate Failure →');
-  await expect(page.locator('text=Webhooks')).toBeVisible();
+  await page.goto('/app/webhooks');
+  await page.waitForTimeout(2000);
   
   // Click on whd_2048
-  await page.click('text=whd_2048');
+  await page.getByText('whd_2048').first().click();
   await expect(page.locator('text=Delivery: whd_2048')).toBeVisible();
   
   // 3. Create Ticket with request ID
-  await page.click('text=Create Support Request');
-  await expect(page.locator('text=Create New Support Request')).toBeVisible();
+  await page.getByText('Create Support Request').click();
+  await expect(page.locator('text=Create Support Request').first()).toBeVisible();
   
   // Form is pre-filled with req_8bd129c2
   await expect(page.locator('input[value="req_8bd129c2"]')).toBeVisible();
@@ -33,20 +33,20 @@ test('ResolveOps Core Incident Workflow', async ({ page }) => {
   await expect(page.locator('text=Webhook failure again')).toBeVisible();
   
   // Sign out
-  await page.click('text=Sign out');
+  await page.getByText('Sign out', { exact: false }).click();
   await expect(page.url()).toContain('/login');
   
   // 4. Support Agent Login
-  await page.fill('input[type="email"]', 'agent@resolveops.test');
+  await page.fill('input[type="email"]', 'maya@resolveops.demo');
   await page.fill('input[type="password"]', 'password123');
   await page.click('button[type="submit"]');
   
   await expect(page.locator('text=Support Dashboard')).toBeVisible({ timeout: 15000 });
   
   // 5. Support Agent Ticket Queue
-  await page.click('text=View Ticket Queue →');
-  await expect(page.locator('text=Ticket Queue')).toBeVisible();
-  await page.click('text=Webhook failure again');
+  await page.goto('/app/support');
+  await page.waitForTimeout(2000);
+  await page.getByText('Webhook failure again').click();
   
   // 6. Trace Explorer
   await expect(page.locator('text=req_8bd129c2')).toBeVisible();

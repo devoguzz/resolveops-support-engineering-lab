@@ -5,45 +5,20 @@ import { teamService } from '../../services/mock/teamService';
 import { webhookService } from '../../services/mock/webhookService';
 import { ticketService } from '../../services/mock/ticketService';
 import { activityService } from '../../services/mock/activityService';
+import { diagnosticService } from '../../services/mock/diagnosticService';
 import { LoadingState } from '../../components/shared';
 import { Users, Activity, AlertCircle, LifeBuoy, ArrowRight, CheckCircle2, ShieldAlert, Clock, Terminal } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 import { PageHeader } from '../../components/domain/PageHeader';
 import { MetricCard } from '../../components/domain/MetricCard';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { AnimatedMetric } from '../../components/motion/AnimatedMetric';
+import { LiveMetricChart } from '../../components/charts/LiveMetricChart';
+import { BorderBeam } from '../../components/ui/border-beam';
 
-const API_DATA = [
-  { name: 'Mon', requests: 12000 },
-  { name: 'Tue', requests: 19000 },
-  { name: 'Wed', requests: 15000 },
-  { name: 'Thu', requests: 22000 },
-  { name: 'Fri', requests: 28000 },
-  { name: 'Sat', requests: 14000 },
-  { name: 'Sun', requests: 11000 },
-];
 
-// Helper to format Y-axis labels like 3k, 6k, 12k
-const formatYAxis = (value: number) => {
-  if (value === 0) return '0';
-  return `${value / 1000}k`;
-};
-
-// Custom Tooltip for Recharts
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-card border border-border shadow-md p-3 rounded-lg">
-        <p className="font-semibold text-foreground mb-1">{label}</p>
-        <p className="text-primary font-bold">
-          {payload[0].value.toLocaleString()} requests
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -53,6 +28,7 @@ export function Dashboard() {
     failedWebhooks: 0,
     openTickets: 0
   });
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -62,8 +38,9 @@ export function Dashboard() {
       teamService.listMembers((user.organizationId || ''), user),
       webhookService.listDeliveries({ organizationId: (user.organizationId || '') }, user),
       ticketService.listTickets({ status: 'open' }, user),
-      activityService.listActivity((user.organizationId || ''), {}, user)
-    ]).then(([membersRes, webhooksRes, ticketsRes, activityRes]) => {
+      activityService.listActivity((user.organizationId || ''), {}, user),
+      diagnosticService.getCustomerDashboardMetrics(user.organizationId || '')
+    ]).then(([membersRes, webhooksRes, ticketsRes, activityRes, dashboardRes]) => {
       setMetrics({
         users: membersRes.ok ? membersRes.data.filter(m => m.status === 'active').length : 0,
         failedWebhooks: webhooksRes.ok ? webhooksRes.data.filter((w:any) => w.result === 'failed').length : 0,
@@ -71,6 +48,9 @@ export function Dashboard() {
       });
       if (activityRes.ok) {
         setActivities(activityRes.data.slice(0, 5));
+      }
+      if (dashboardRes.ok) {
+        setDashboardData(dashboardRes.data);
       }
       setLoading(false);
     });
@@ -90,7 +70,7 @@ export function Dashboard() {
         <Link to="/app/team" className="block outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
           <MetricCard
             title="Active Users"
-            value={metrics.users}
+            value={<AnimatedMetric value={metrics.users} />}
             icon={Users}
             trend={{ value: '+2%', positive: true }}
             footerText="vs last month"
@@ -99,24 +79,31 @@ export function Dashboard() {
         <Link to="/app/activity" className="block outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
           <MetricCard
             title="API Requests Today"
-            value="121k"
+            value={
+              <AnimatedMetric 
+                value={dashboardData?.apiRequestsToday ? (dashboardData.apiRequestsToday / 1000).toFixed(1) : 0} 
+                suffix="k" 
+                formatNumber={false} 
+              />
+            }
             icon={Activity}
-            trend={{ value: '+14%', positive: true }}
+            trend={dashboardData?.apiTrend}
             footerText="vs previous day"
           />
         </Link>
         <Link to="/app/webhooks" className="block outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
           <MetricCard
             title="Failed Webhooks"
-            value={metrics.failedWebhooks}
+            value={<AnimatedMetric value={metrics.failedWebhooks} />}
             icon={AlertCircle}
             trend={metrics.failedWebhooks > 0 ? { value: 'Action needed', positive: false } : undefined}
           />
+          {metrics.failedWebhooks > 0 && <BorderBeam colorFrom="var(--color-destructive)" colorTo="var(--color-warning)" />}
         </Link>
         <Link to="/app/support" className="block outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
           <MetricCard
             title="Open Tickets"
-            value={metrics.openTickets}
+            value={<AnimatedMetric value={metrics.openTickets} />}
             icon={LifeBuoy}
           />
         </Link>
@@ -124,76 +111,52 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* API Usage Chart */}
-        <Card className="lg:col-span-2 flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
-            <div>
-              <CardTitle className="text-base">API Traffic Volume</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Total requests processed over the last 7 days</p>
-            </div>
-            <select className="bg-background border border-border text-sm font-medium text-foreground rounded-md py-1.5 px-3 cursor-pointer outline-none focus:ring-2 focus:ring-ring">
-               <option>Last 7 Days</option>
-               <option>Last 30 Days</option>
-            </select>
-          </CardHeader>
-          <CardContent className="flex-1 p-6 h-[340px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={API_DATA} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 500}} dy={10} />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tickFormatter={formatYAxis}
-                  tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 500}} 
-                  dx={-10} 
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="requests" 
-                  stroke="var(--chart-1)" 
-                  strokeWidth={2} 
-                  fillOpacity={1} 
-                  fill="url(#colorRequests)" 
-                  activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--background)', fill: 'var(--chart-1)' }} 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2">
+          <LiveMetricChart 
+            title="System Telemetry & Ingress"
+            description="Aggregated webhook and API traffic trends (trailing 7-day volume)"
+            data={(dashboardData?.chartData || []).map((d: any, idx: number, arr: any[]) => {
+              const date = new Date()
+              date.setDate(date.getDate() - (arr.length - 1 - idx))
+              return {
+                date: date.toISOString(),
+                value: d.requests
+              }
+            })}
+            height={340}
+          />
+        </div>
 
         {/* Platform Status */}
-        <Card className="flex flex-col">
+        <Card className="flex flex-col relative overflow-hidden">
           <CardHeader className="border-b border-border bg-muted/30 pb-4">
             <h3 className="text-sm font-bold tracking-widest uppercase text-muted-foreground flex items-center gap-2">
-               <ShieldAlert className="w-4 h-4 text-warning" /> Platform Status
+               {dashboardData?.platformStatus.status === 'degraded' ? <ShieldAlert className="w-4 h-4 text-warning" /> : <CheckCircle2 className="w-4 h-4 text-success" />} 
+               Platform Status
             </h3>
           </CardHeader>
           <CardContent className="flex-1 p-6 flex flex-col justify-center">
              <div className="flex items-center gap-3 mb-4">
-                 <StatusBadge status="degraded" />
-                 <h4 className="text-lg font-bold text-foreground">Degraded Performance</h4>
+                 <StatusBadge status={dashboardData?.platformStatus.status || 'active'} />
+                 <h4 className="text-lg font-bold text-foreground">{dashboardData?.platformStatus.title}</h4>
              </div>
              <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-               We are actively investigating intermittent delays in webhook deliveries across the EU-West regions. Core APIs remain fully functional.
+               {dashboardData?.platformStatus.description}
              </p>
              
              <div className="mt-auto flex flex-col gap-3">
                <div className="flex items-center justify-between text-xs font-mono text-muted-foreground border-b border-border pb-2">
                  <span>UPDATED</span>
-                 <span>2 MINS AGO</span>
+                 <span>{dashboardData?.platformStatus.updated}</span>
                </div>
                <Button variant="outline" className="w-full">
                   Subscribe to Updates
                </Button>
              </div>
           </CardContent>
+          {dashboardData?.platformStatus.status === 'degraded' && (
+            <BorderBeam colorFrom="var(--color-warning)" colorTo="var(--color-primary)" duration={20} />
+          )}
         </Card>
       </div>
 

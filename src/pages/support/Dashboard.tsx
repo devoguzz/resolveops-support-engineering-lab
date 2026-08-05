@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../store/authStore';
 import { AlertTriangle, Clock, Server, Inbox, Activity, CheckCircle2, ChevronRight, BarChart2, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AnimatedMetric } from '../../components/motion/AnimatedMetric';
 
 const QUEUE_DATA = [
   { name: 'P1 - Critical', value: 3, color: '#ef4444' },
@@ -34,7 +35,7 @@ export function Dashboard() {
             <div className="text-slate-400 group-hover:text-blue-500 transition-colors"><Inbox className="w-[18px] h-[18px]" /></div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-slate-900 tracking-tight">12</p>
+            <p className="text-3xl font-bold text-slate-900 tracking-tight"><AnimatedMetric value={12} /></p>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100/80 flex items-center justify-between text-[13px] font-medium">
              <span className="text-slate-500">+3 since last hour</span>
@@ -48,7 +49,7 @@ export function Dashboard() {
             <div className="text-red-500"><AlertTriangle className="w-[18px] h-[18px]" /></div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-red-600 tracking-tight">3</p>
+            <p className="text-3xl font-bold text-red-600 tracking-tight"><AnimatedMetric value={3} /></p>
           </div>
           <div className="mt-4 pt-4 border-t border-red-100 flex items-center justify-between text-[13px] text-red-600 font-medium">
              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5"/> 1 approaching SLA</span>
@@ -61,7 +62,7 @@ export function Dashboard() {
             <div className="text-amber-500"><Activity className="w-[18px] h-[18px]" /></div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-amber-600 tracking-tight">1</p>
+            <p className="text-3xl font-bold text-amber-600 tracking-tight"><AnimatedMetric value={1} /></p>
           </div>
           <div className="mt-4 pt-4 border-t border-amber-100 flex items-center justify-between text-[13px] text-amber-600 font-medium">
              <span>webhook-delivery-delay</span>
@@ -75,7 +76,7 @@ export function Dashboard() {
             <div className="text-slate-400 group-hover:text-emerald-500 transition-colors"><Server className="w-[18px] h-[18px]" /></div>
           </div>
           <div className="flex items-baseline gap-1">
-            <p className="text-3xl font-bold text-slate-900 tracking-tight">99.8</p>
+            <p className="text-3xl font-bold text-slate-900 tracking-tight"><AnimatedMetric value={99.8} formatNumber={false} /></p>
             <span className="text-lg font-bold text-slate-400">%</span>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100/80 flex items-center justify-between text-[13px] text-slate-500 font-medium">
