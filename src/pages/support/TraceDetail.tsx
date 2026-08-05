@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { diagnosticService } from '../../services/mock/diagnosticService'
 import { RequestTrace } from '../../domain/models'
-import { DEMO_IDS } from '../../mocks/seed'
+import { demoDataService } from '../../services/mock/demoDataService'
+
+import { EntityNotFound } from '../../components/system/EntityNotFound'
 
 export function TraceDetail() {
+  const DEMO_IDS = demoDataService.getDemoIds()
   const { requestId } = useParams()
   const [trace, setTrace] = useState<RequestTrace | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,7 +24,7 @@ export function TraceDetail() {
   }, [requestId])
 
   if (loading) return <div className="p-4">Loading trace...</div>
-  if (!trace) return <div className="p-4">Trace not found</div>
+  if (!trace) return <EntityNotFound entityName="Trace" />
 
   return (
     <div className="flex flex-col gap-6">

@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { teamService } from '../../services/mock/teamService';
 import { useAuth } from '../../store/authStore';
-import { LoadingState } from '../../components/shared';
+import { formatDate } from '../../lib/dates';
+import { LoadingState, Toast } from '../../components/shared';
 import { PageHeader } from '../../components/domain/PageHeader';
 import { StatusBadge } from '../../components/domain/StatusBadge';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Plus, Search } from 'lucide-react';
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
+import { PermissionGate } from '../../components/system/PermissionGate';
 
 export function TeamList() {
   const { user } = useAuth();
@@ -19,6 +21,7 @@ export function TeamList() {
   const [statusFilter, setStatusFilter] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteState, setInviteState] = useState<'idle' | 'success'>('idle');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' as any });
 
   const loadMembers = async () => {
     setLoading(true);
@@ -32,20 +35,20 @@ export function TeamList() {
   }, [user]);
 
   const handleInvite = async () => {
-    const email = prompt('Enter email address to invite:');
-    if (!email) return;
+    const email = 'demo.member@company.com';
     setInviting(true);
     setInviteState('idle');
     const res: any = await teamService.inviteMember?.(user?.organizationId || '', email, user);
     if (res?.ok) {
-      alert(`Invitation sent to ${email}`);
+      setToast({ show: true, message: `Invitation sent to ${email}`, type: 'success' });
       await loadMembers();
       setInviteState('success');
       setTimeout(() => setInviteState('idle'), 2000);
     } else {
-      alert(res?.error?.message || 'Failed to invite member. Not implemented in mock service.');
+      setToast({ show: true, message: res?.error?.message || 'Failed to invite member. Not implemented in mock service.', type: 'error' });
     }
     setInviting(false);
+    setTimeout(() => setToast(t => ({ ...t, show: false })), 3000);
   };
 
   if (loading) return <LoadingState />;
@@ -58,17 +61,22 @@ export function TeamList() {
   });
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto space-y-6">
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6 relative">
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50">
+          <Toast message={toast.message} type={toast.type}  />
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader 
           title="Team Members" 
           description="Manage who has access to your organization."
         />
-        {user?.role === 'customer_owner' && (
+        <PermissionGate allowedRoles={['customer_owner']}>
           <Button className="flex items-center gap-2" onClick={handleInvite} disabled={inviting || inviteState === 'success'}>
             <Plus className="w-4 h-4" /> <AnimatedStatus status={inviting ? 'Sending...' : inviteState === 'success' ? 'Invited' : 'Invite Member'} />
           </Button>
-        )}
+        </PermissionGate>
       </div>
       
       <Card className="bg-muted/30">
@@ -132,8 +140,8 @@ export function TeamList() {
                     <span className="text-sm font-medium text-foreground capitalize">{m.role.replace('customer_', '')}</span>
                   </td>
                   <td className="p-4"><StatusBadge status={m.status} /></td>
-                  <td className="p-4 text-sm font-medium text-muted-foreground">{new Date(m.joinedAt).toLocaleDateString()}</td>
-                  <td className="p-4 text-sm font-medium text-muted-foreground">{new Date(m.lastActiveAt).toLocaleDateString()}</td>
+                  <td className="p-4 text-sm font-medium text-muted-foreground">{formatDate(m.joinedAt)}</td>
+                  <td className="p-4 text-sm font-medium text-muted-foreground">{formatDate(m.lastActiveAt)}</td>
                   <td className="p-4 text-right">
                     <Link to={`/app/team/${m.id}`}>
                       <Button variant="ghost" size="sm">Manage</Button>

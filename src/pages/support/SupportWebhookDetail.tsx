@@ -4,6 +4,8 @@ import { diagnosticService } from '../../services/mock/diagnosticService'
 import { WebhookDelivery } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 
+import { EntityNotFound } from '../../components/system/EntityNotFound'
+
 export function SupportWebhookDetail() {
   const { deliveryId } = useParams()
   const [delivery, setDelivery] = useState<WebhookDelivery | null>(null)
@@ -21,7 +23,7 @@ export function SupportWebhookDetail() {
   }, [deliveryId])
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading delivery details...</div>
-  if (!delivery) return <div className="p-8 text-center text-red-500">Delivery not found</div>
+  if (!delivery) return <EntityNotFound entityName="Webhook Delivery" />
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">

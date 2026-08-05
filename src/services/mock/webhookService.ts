@@ -56,7 +56,7 @@ export class WebhookService {
       { id: 'ep_1', organizationId, url: 'https://api.northstar.test/webhooks/resolveops', status: 'active', events: ['*'] }
     ];
     const newEp = {
-      id: `ep_${Math.random()}`,
+      id: `ep_${crypto.randomUUID()}`,
       organizationId,
       url,
       status: 'active',

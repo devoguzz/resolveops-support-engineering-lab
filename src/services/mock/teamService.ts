@@ -119,7 +119,7 @@ export class TeamService {
     let invitedUser = users.find((u: any) => u.email === email);
     if (!invitedUser) {
       invitedUser = {
-        id: `user_${Math.random()}`,
+        id: `user_${crypto.randomUUID()}`,
         email,
         fullName: email.split('@')[0],
         role: 'customer_member',
@@ -135,7 +135,7 @@ export class TeamService {
     }
     
     const newMember: OrganizationMember = {
-      id: `member_${Math.random()}`,
+      id: `member_${crypto.randomUUID()}`,
       organizationId: orgId,
       userId: invitedUser.id,
       role: 'customer_member',

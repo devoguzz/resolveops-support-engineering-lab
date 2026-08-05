@@ -2,7 +2,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../store/authStore'
 import { 
   LayoutDashboard, LifeBuoy, FileSearch, TerminalSquare, 
-  Activity, PlaySquare, LogOut, Bell, Search, Menu, Hexagon,
+  Activity, PlaySquare, LogOut, Menu, Hexagon,
   ShieldAlert, Radio
 } from 'lucide-react'
 import { useState } from 'react'
@@ -117,24 +117,6 @@ export function SupportLayout() {
              >
                <Menu className="w-[20px] h-[20px]" />
              </button>
-
-             <div className="h-5 w-[1px] bg-border hidden sm:block"></div>
-             
-             <div className="relative hidden md:block group">
-               <Search className="w-[16px] h-[16px] absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-               <input 
-                 type="text" 
-                 placeholder="Search tickets, traces, logs..." 
-                 className="pl-10 pr-4 py-2 w-[340px] bg-muted/50 border border-border rounded-lg text-[14px] font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 focus:bg-background transition-all"
-               />
-             </div>
-           </div>
-           
-           <div className="flex items-center gap-3">
-              <button className="relative p-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors group">
-                <Bell className="w-[20px] h-[20px] group-hover:text-foreground transition-colors" />
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-destructive border-2 border-card rounded-full"></span>
-              </button>
            </div>
         </header>
 

@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { ArrowLeft, Copy } from 'lucide-react';
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
 import { BorderBeam } from '../../components/ui/border-beam';
+import { EntityNotFound } from '../../components/system/EntityNotFound';
 
 export function CustomerTicketDetail() {
   const { ticketId } = useParams();
@@ -54,7 +55,7 @@ export function CustomerTicketDetail() {
   };
 
   if (loading) return <LoadingState />;
-  if (!data) return <div className="p-12 text-center text-sm text-muted-foreground">Ticket not found</div>;
+  if (!data) return <EntityNotFound entityName="Ticket" />;
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">

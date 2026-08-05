@@ -4,6 +4,8 @@ import { runbookService } from '../../services/mock/runbookService'
 import { Runbook } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 
+import { EntityNotFound } from '../../components/system/EntityNotFound'
+
 export function RunbookDetail() {
   const { slug } = useParams()
   const [runbook, setRunbook] = useState<Runbook | null>(null)
@@ -21,7 +23,7 @@ export function RunbookDetail() {
   }, [slug])
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading runbook...</div>
-  if (!runbook) return <div className="p-8 text-center text-red-500">Runbook not found</div>
+  if (!runbook) return <EntityNotFound entityName="Runbook" />
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">

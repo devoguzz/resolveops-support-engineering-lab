@@ -7,7 +7,7 @@ import { formatDate } from '../../lib/dates'
 import { PageHeader } from '../../components/domain/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Download } from 'lucide-react'
+
 
 export function Subscription() {
   const { user } = useAuth()
@@ -128,9 +128,7 @@ export function Subscription() {
                   <span className="text-xs font-bold text-success bg-success/10 px-2.5 py-1 rounded-sm uppercase tracking-wider">Paid</span>
                 </td>
                 <td className="p-4 text-right">
-                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary gap-2">
-                    <Download className="w-4 h-4" /> Download PDF
-                  </Button>
+                  <span className="text-xs text-muted-foreground italic">Unavailable in demo</span>
                 </td>
               </tr>
             </tbody>

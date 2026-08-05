@@ -43,7 +43,7 @@ export const MEMBERS: OrganizationMember[] = USERS.filter(u => u.organizationId)
   role: u.role as any,
   status: 'active',
   joinedAt: '2025-01-01T00:00:00Z',
-  lastActiveAt: new Date(Date.now() - Math.random() * 86400000 * 5).toISOString()
+  lastActiveAt: new Date(Date.now() - ((i * 17) % 5) * 86400000).toISOString()
 }));
 
 export const API_KEYS: ApiKey[] = Array.from({length: 8}).map((_, i) => ({
@@ -89,7 +89,7 @@ export const WEBHOOK_DELIVERIES: WebhookDelivery[] = Array.from({length: 25}).ma
     statusCode: isMain ? 401 : (i % 5 === 0 ? 500 : 200),
     result: isMain ? 'failed' : (i % 5 === 0 ? 'failed' : 'success'),
     attempt: isMain ? 3 : 1,
-    durationMs: 120 + Math.floor(Math.random() * 100),
+    durationMs: 120 + ((i * 37) % 100),
     requestPayload: { customer: 'test', amount: 99.99 },
     responseBody: isMain ? { error: 'Invalid Signature' } : {},
     requestId: isMain ? DEMO_IDS.req_main : `req_100${i}`,
@@ -137,7 +137,7 @@ export const TRACES: RequestTrace[] = Array.from({length: 40}).map((_, i) => {
     method: 'POST',
     path: '/api/v1/events',
     statusCode: isMain ? 500 : (i % 5 === 0 ? 429 : 200),
-    durationMs: Math.floor(Math.random() * 500),
+    durationMs: ((i * 41) % 500),
     timestamp: new Date(Date.now() - i * 3600000).toISOString(),
     errorType: isMain ? 'WEBHOOK_SIGNATURE_INVALID' : undefined,
     stackTrace: isMain ? 'Failed to deliver webhook due to invalid HMAC signature\n  at verifySignature (src/worker/webhook.ts:45)\n  at processJob (src/worker/index.ts:112)' : undefined

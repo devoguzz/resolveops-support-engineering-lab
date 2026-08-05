@@ -50,7 +50,7 @@ export class TicketService {
     const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
     
     const newTicket: SupportTicket = {
-      id: `SUP-${Math.floor(1000 + Math.random() * 9000)}`,
+      id: `SUP-${1000 + (stored.tickets || TICKETS).length}`,
       organizationId: input.organizationId,
       subject: input.subject,
       category: input.category,
@@ -73,7 +73,7 @@ export class TicketService {
     await simulateNetworkDelay(400)
     const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
     const msg: TicketMessage = {
-      id: `msg_${Math.random()}`,
+      id: `msg_${crypto.randomUUID()}`,
       ticketId,
       authorId,
       content,
@@ -89,7 +89,7 @@ export class TicketService {
     await simulateNetworkDelay(400)
     const stored = JSON.parse(localStorage.getItem('resolveops_demo_state') || '{}')
     const note: InternalNote = {
-      id: `note_${Math.random()}`,
+      id: `note_${crypto.randomUUID()}`,
       ticketId,
       authorId,
       content,

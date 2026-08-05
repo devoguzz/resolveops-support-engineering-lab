@@ -5,6 +5,8 @@ import { BackgroundJob } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 import { StatusBadge } from '../../components/StatusBadge'
 
+import { EntityNotFound } from '../../components/system/EntityNotFound'
+
 export function JobDetail() {
   const { jobId } = useParams()
   const [job, setJob] = useState<BackgroundJob | null>(null)
@@ -22,7 +24,7 @@ export function JobDetail() {
   }, [jobId])
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading job details...</div>
-  if (!job) return <div className="p-8 text-center text-red-500">Job not found</div>
+  if (!job) return <EntityNotFound entityName="Job" />
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">

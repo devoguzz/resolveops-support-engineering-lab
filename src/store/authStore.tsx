@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { User } from '../domain/models'
-import { USERS } from '../mocks/seed'
+import { getStoredState } from './demoDataStore'
 
 interface AuthContextType {
   user: User | null
-  login: (email: string) => Promise<void>
+  login: (email: string) => Promise<User>
   logout: () => void
   isLoading: boolean
 }
@@ -20,25 +20,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       try {
         const parsedUser = JSON.parse(stored)
-        // Verify user exists in our mock seed
-        const realUser = USERS.find(u => u.id === parsedUser.id)
+        const state = getStoredState()
+        const realUser = state.users.find((u: User) => u.id === parsedUser.id)
         if (realUser) {
           setUser(realUser)
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
     setIsLoading(false)
   }, [])
 
-  const login = async (email: string) => {
+  const login = async (email: string): Promise<User> => {
     // Simulate delay
     await new Promise(r => setTimeout(r, 600))
-    const found = USERS.find(u => u.email === email)
+    const state = getStoredState()
+    const found = state.users.find((u: User) => u.email === email)
     if (!found) throw new Error('Invalid credentials')
     setUser(found)
     localStorage.setItem('resolveops_auth', JSON.stringify(found))
+    return found
   }
 
   const logout = () => {

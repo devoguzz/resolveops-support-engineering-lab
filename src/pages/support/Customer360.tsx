@@ -4,6 +4,8 @@ import { organizationService } from '../../services/mock/organizationService'
 import { Organization, OrganizationMember } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 
+import { EntityNotFound } from '../../components/system/EntityNotFound'
+
 export function Customer360() {
   const { organizationId } = useParams()
   const [org, setOrg] = useState<Organization | null>(null)
@@ -26,7 +28,7 @@ export function Customer360() {
   }, [organizationId])
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading Customer 360...</div>
-  if (!org) return <div className="p-8 text-center text-red-500">Organization not found</div>
+  if (!org) return <EntityNotFound entityName="Customer" />
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl">

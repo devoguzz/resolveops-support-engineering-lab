@@ -6,6 +6,7 @@ import { useAuth } from '../../store/authStore'
 import { formatDate } from '../../lib/dates'
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
 import { BorderBeam } from '../../components/ui/border-beam'
+import { EntityNotFound } from '../../components/system/EntityNotFound'
 
 export function SupportTicketDetail() {
   const { ticketId } = useParams()
@@ -74,8 +75,7 @@ export function SupportTicketDetail() {
   }
 
   if (loading) return <div className="p-4">Loading ticket...</div>
-  if (error) return <div className="p-4 text-danger">{error}</div>
-  if (!ticket) return <div className="p-4">Ticket not found</div>
+  if (error || !ticket) return <EntityNotFound entityName="Ticket" />
 
   return (
     <div className="flex flex-col gap-6">

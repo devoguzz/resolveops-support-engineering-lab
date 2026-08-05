@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button'
 import { ArrowLeft, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus'
 import { BorderBeam } from '../../components/ui/border-beam'
+import { EntityNotFound } from '../../components/system/EntityNotFound'
 
 export function IntegrationDetail() {
   const { integrationId } = useParams()
@@ -58,8 +59,8 @@ export function IntegrationDetail() {
     if (res.ok) setIntegration(res.data)
   }
 
-  if (loading) return <div className="p-12 text-center text-sm text-muted-foreground">Loading integration details...</div>
-  if (!integration) return <div className="p-12 text-center text-destructive font-medium">Integration not found</div>
+  if (loading) return <div className="p-12 text-center text-sm text-muted-foreground flex flex-col items-center gap-2"><RefreshCw className="w-5 h-5 animate-spin text-slate-300"/> Loading integration details...</div>
+  if (!integration) return <EntityNotFound entityName="Integration" />
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">

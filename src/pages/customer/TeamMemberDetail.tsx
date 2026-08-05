@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
+import { EntityNotFound } from '../../components/system/EntityNotFound';
+import { PermissionGate } from '../../components/system/PermissionGate';
 
 export function TeamMemberDetail() {
   const { memberId } = useParams();
@@ -76,7 +78,7 @@ export function TeamMemberDetail() {
   };
 
   if (loading) return <LoadingState />;
-  if (!member) return <div className="p-12 text-center text-sm text-muted-foreground">Member not found or access denied</div>;
+  if (!member) return <EntityNotFound entityName="Team Member" />;
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6 relative">
@@ -150,7 +152,7 @@ export function TeamMemberDetail() {
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Joined</span>
-                  <span className="font-medium text-foreground">{new Date(member.joinedAt).toLocaleDateString()}</span>
+                  <span className="font-medium text-foreground">{formatDate(member.joinedAt)}</span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Last Active</span>
@@ -160,7 +162,7 @@ export function TeamMemberDetail() {
             </CardContent>
           </Card>
 
-          {isOwner && (
+          <PermissionGate allowedRoles={['customer_owner']}>
             <Card className="border-destructive/30 bg-destructive/5">
               <CardHeader className="border-b border-destructive/20 pb-4 flex flex-row items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
@@ -178,7 +180,7 @@ export function TeamMemberDetail() {
                 </Button>
               </CardContent>
             </Card>
-          )}
+          </PermissionGate>
         </div>
       </div>
     </div>

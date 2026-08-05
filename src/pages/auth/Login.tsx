@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAuth } from '../../store/authStore'
-import { USERS } from '../../mocks/seed'
 import { ArrowRight, UserCircle, Briefcase, Building2, UserCog, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 const loginSchema = z.object({
@@ -30,16 +29,25 @@ export function Login() {
   const onSubmit = async (data: LoginForm) => {
     try {
       setError('')
-      await login(data.email)
+      const user = await login(data.email)
       
       const returnTo = searchParams.get('returnTo')
       if (returnTo) {
-        navigate(returnTo, { replace: true })
-        return
+        // Safe returnTo check: only allow relative paths
+        if (returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+           // Prevent cross-role navigation via returnTo
+           if (user.role.startsWith('support_') && !returnTo.startsWith('/support')) {
+              navigate('/support/dashboard', { replace: true })
+           } else if (!user.role.startsWith('support_') && returnTo.startsWith('/support')) {
+              navigate('/app/dashboard', { replace: true })
+           } else {
+              navigate(returnTo, { replace: true })
+           }
+           return
+        }
       }
 
-      const user = USERS.find(u => u.email === data.email)
-      if (user?.role.startsWith('support_')) {
+      if (user.role.startsWith('support_')) {
         navigate('/support/dashboard', { replace: true })
       } else {
         navigate('/app/dashboard', { replace: true })
@@ -118,7 +126,7 @@ export function Login() {
             <input type="checkbox" className="rounded-md border-slate-300 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-offset-1 w-4 h-4 cursor-pointer group-hover:border-slate-400 transition-colors" {...register('rememberMe')} />
             Remember me
           </label>
-          <a href="#" className="text-[14px] text-slate-500 hover:text-slate-900 transition-colors font-medium focus:outline-none focus:underline" onClick={(e) => e.preventDefault()}>
+          <a href="#" className="text-[14px] text-slate-500 hover:text-slate-900 transition-colors font-medium focus:outline-none focus:underline" onClick={(e) => { e.preventDefault(); setError('Forgot password is not supported in this demo environment.'); setTimeout(() => setError(''), 3000); }}>
             Forgot password?
           </a>
         </div>

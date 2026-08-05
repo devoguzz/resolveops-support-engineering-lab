@@ -52,14 +52,15 @@ export class IntegrationService {
     const item = items.find(i => i.id === id)
     if (!item) return { ok: false, error: { code: 'NOT_FOUND', message: 'Integration not found' } }
 
-    const isSuccess = Math.random() > 0.2 // 80% success for demo
+    const willFail = item.id === 'int_1' || item.id.includes('fail')
+    const isConnectionSuccess = !willFail
 
     item.lastSyncAt = new Date().toISOString()
-    item.status = isSuccess ? 'active' : 'error'
+    item.status = isConnectionSuccess ? 'active' : 'error'
     
     localStorage.setItem('resolveops_demo_state', JSON.stringify(stored))
     
-    if (isSuccess) {
+    if (isConnectionSuccess) {
       return success({ success: true, message: 'Connection established successfully.', integration: item })
     } else {
       return success({ success: false, message: 'Connection failed. Please check credentials.', integration: item })

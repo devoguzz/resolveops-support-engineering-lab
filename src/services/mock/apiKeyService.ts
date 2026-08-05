@@ -24,12 +24,14 @@ export class ApiKeyService {
        return { ok: false, error: { code: 'FORBIDDEN', message: 'Access denied' } }
     }
     
-    const randomHex = Math.random().toString(16).substring(2, 10)
+    const randomBytes = new Uint8Array(8)
+    crypto.getRandomValues(randomBytes)
+    const randomHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 8)
     const secret = `rop_demo_${randomHex}89ab`
     const prefix = `rop_demo_...${randomHex.substring(4)}`
     
     const newKey: ApiKey = {
-      id: `key_${Math.random()}`,
+      id: `key_${crypto.randomUUID()}`,
       organizationId,
       name,
       prefix,

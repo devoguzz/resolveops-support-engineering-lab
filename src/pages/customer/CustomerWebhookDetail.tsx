@@ -12,6 +12,7 @@ import { ArrowLeft, RefreshCw, AlertCircle, FileJson } from 'lucide-react';
 import { AnimatedMetric } from '../../components/motion/AnimatedMetric';
 import { AnimatedStatus } from '../../components/motion/AnimatedStatus';
 import { BorderBeam } from '../../components/ui/border-beam';
+import { EntityNotFound } from '../../components/system/EntityNotFound';
 
 export function CustomerWebhookDetail() {
   const { deliveryId } = useParams();
@@ -51,7 +52,7 @@ export function CustomerWebhookDetail() {
   else if (retryStatus === 'failed') buttonText = 'Failed Again';
 
   if (loading) return <LoadingState />;
-  if (!data) return <div className="p-12 text-center text-sm text-muted-foreground">Webhook delivery not found</div>;
+  if (!data) return <EntityNotFound entityName="Webhook Delivery" />;
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto space-y-6">

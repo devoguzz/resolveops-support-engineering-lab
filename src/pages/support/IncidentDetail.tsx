@@ -5,6 +5,8 @@ import { Incident } from '../../domain/models'
 import { formatDate } from '../../lib/dates'
 import { StatusBadge } from '../../components/StatusBadge'
 
+import { EntityNotFound } from '../../components/system/EntityNotFound'
+
 export function IncidentDetail() {
   const { incidentId } = useParams()
   const [incident, setIncident] = useState<Incident | null>(null)
@@ -22,7 +24,7 @@ export function IncidentDetail() {
   }, [incidentId])
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading incident details...</div>
-  if (!incident) return <div className="p-8 text-center text-red-500">Incident not found</div>
+  if (!incident) return <EntityNotFound entityName="Incident" />
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl">
